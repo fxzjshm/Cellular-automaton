@@ -13,6 +13,7 @@ public class CellularAutomaton extends ApplicationAdapter {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+//		Gdx.app.error("File",Gdx.files.internal("").file().getAbsolutePath());
 		img = new Texture("badlogic.jpg");
 	}
 
