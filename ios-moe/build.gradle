@@ -44,7 +44,7 @@ moe {
     xcode {
         mainTarget 'ios-moe'
         packageName 'com.entermoor.cellular_automaton'
-        deploymentTarget = '9.0'
+        deploymentTarget = '7.0'
         xcodeProjectDirPath 'xcode'
         generateProject false
     }
