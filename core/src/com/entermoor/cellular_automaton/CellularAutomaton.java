@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
+import com.badlogic.gdx.utils.reflect.ReflectionException;
 
 import java.util.Random;
 
@@ -22,6 +24,15 @@ public class CellularAutomaton extends ApplicationAdapter {
 
     public short neighbourCount = 0;
 
+    public static Object[] clone__Array__(Object[] array) throws ReflectionException {
+        Object[] newArray = new Object[array.length];
+        for (int i = 0; i < array.length; i++) {
+//            newArray[i]=array[i];
+            newArray[i] = ClassReflection.getDeclaredMethod(array[i].getClass(), "clone").invoke(array[i]);
+        }
+        return newArray;
+    }
+
     @Override
     public void create() {
         //Gdx.graphics.setWindowedMode(64, 48);
@@ -31,7 +42,14 @@ public class CellularAutomaton extends ApplicationAdapter {
         width = (int) (Gdx.graphics.getWidth() * 0.9 / scale);
         height = (int) (Gdx.graphics.getHeight() * 0.8 / scale);
         mapBool = new boolean[width][height];
-        oldMapBool = mapBool.clone();
+//        oldMapBool = mapBool.clone();
+//        System.arraycopy(mapBool, 0, oldMapBool, 0, mapBool.length);
+        oldMapBool = new boolean[width][height];
+//        try {
+//            clone__Array__(mapBool);
+//        } catch (ReflectionException e) {
+//            e.printStackTrace();
+//        }
         pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         map = new TextureRegion(new Texture(pixmap));
 //        map.getTexture().getTextureData().
@@ -47,7 +65,8 @@ public class CellularAutomaton extends ApplicationAdapter {
 
     @Override
     public void render() {
-        oldMapBool = mapBool.clone();
+//        oldMapBool = mapBool.clone();
+        System.arraycopy(mapBool, 0, oldMapBool, 0, mapBool.length);
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
 
