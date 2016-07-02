@@ -5,9 +5,9 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 
 public class DesktopLauncher {
-	public static void main (String[] arg) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.allowSoftwareMode=true;
-		new LwjglApplication(new CellularAutomaton(), config);
-	}
+    public static void main(String[] arg) {
+        LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+        config.allowSoftwareMode = true;
+        new LwjglApplication(new CellularAutomaton(), config);
+    }
 }
