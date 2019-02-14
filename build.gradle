@@ -1,19 +1,25 @@
 buildscript {
     repositories {
         mavenLocal()
-        mavenCentral()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        if(System.getProperty("user.country").equals("CN")){
+            maven { url "https://maven.aliyun.com/repository/central/" }
+            maven { url "https://maven.aliyun.com/repository/google" }
+        }else{
+            mavenCentral()
+            google()
+        }
+        // maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         jcenter()
-        maven { url uri(System.getenv("INTEL_MULTI_OS_ENGINE_HOME") + "/gradle") }
     }
     dependencies {
-        classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
-        classpath 'com.android.tools.build:gradle:2.1.2'
-        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.1.0'
-        classpath 'com.intel.gradle:moeGradlePlugin:1.1.0.final-1'
+        classpath 'org.wisepersist:gwt-gradle-plugin:1.0.6'
+        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.5'
+        classpath 'org.multi-os-engine:moe-gradle:1.3.6'
+        classpath 'net.sf.proguard:proguard-gradle:5.2.1'
+        classpath 'org.akhikhl.gretty:gretty:+'
     }
 }
-
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
@@ -21,21 +27,27 @@ allprojects {
     version = '1.0'
     ext {
         appName = "Cellular Automaton"
-        gdxVersion = '1.9.3'
-        roboVMVersion = '2.1.0'
+        gdxVersion = '1.9.9'
+        roboVMVersion = '2.3.5'
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.0'
         aiVersion = '1.8.0'
+        svg2pixmapVersion = '0.0.1-SNAPSHOT'
     }
 
     repositories {
         mavenLocal()
-        mavenCentral()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        if(System.getProperty("user.country").equals("CN")){
+            maven { url "https://maven.aliyun.com/repository/central/" }
+            maven { url "https://maven.aliyun.com/repository/google" }
+        }else{
+            mavenCentral()
+            google()
+        }
+        // maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        // maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }
 }
-
 project(":desktop") {
     apply plugin: "java"
 
@@ -46,7 +58,6 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
-
 project(":android") {
     apply plugin: "android"
 
@@ -62,7 +73,6 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
     }
 }
-
 project(":ios") {
     apply plugin: "java"
     apply plugin: "robovm"
@@ -76,7 +86,6 @@ project(":ios") {
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
     }
 }
-
 project(":html") {
     apply plugin: "gwt"
     apply plugin: "war"
@@ -87,18 +96,18 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
+        compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion:sources"
     }
 }
-
 project(":core") {
     apply plugin: "java"
 
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion"
     }
 }
-
 project(":ios-moe") {
     apply plugin: "moe"
 
@@ -110,7 +119,8 @@ project(":ios-moe") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
     }
 }
-
 tasks.eclipse.doLast {
     delete ".project"
+}
+dependencies {
 }

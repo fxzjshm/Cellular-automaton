@@ -1,5 +1,6 @@
 package com.entermoor.cellular_automaton;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -11,16 +12,24 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import org.apache.batik.transcoder.TranscoderException;
+
 import java.util.Random;
+
+import io.github.fxzjshm.gdx.svg2pixmap.Svg2Pixmap;
 
 public class CellularAutomaton extends ApplicationAdapter {
 
@@ -33,7 +42,7 @@ public class CellularAutomaton extends ApplicationAdapter {
     public Pixmap pixmap;
     public TextureRegion map;
     public Image image;
-    public float scale = 6;
+    public float scale = 5;
     public Random random = new Random();
     public InputMultiplexer input = new InputMultiplexer();
     public Skin skin;
@@ -44,9 +53,12 @@ public class CellularAutomaton extends ApplicationAdapter {
     public ImageButton start, pause, restart, randomize, help;
 
     public short neighbourCount = 0;
+    public long lastRefreshTime = TimeUtils.millis();
+    public boolean renderNow = false;
 
     @Override
     public void create() {
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
         batch = new SpriteBatch();
         width = (int) (Gdx.graphics.getWidth() * 0.9 / scale);
         height = (int) (Gdx.graphics.getHeight() * 0.8 / scale);
@@ -69,9 +81,11 @@ public class CellularAutomaton extends ApplicationAdapter {
         map.setRegion(/*pixmapLeftMargin, pixmapDownMargin*/0, 0, (int) (width * scale), (int) (height * scale));
 //        map.getTexture().getTextureData().
 
+        /*
         for (int i = 0; i < random.nextInt(width * height / 100 + 1) + width * height / 10; i++) {
             mapBool[random.nextInt(width)][random.nextInt(height)] = true;
         }
+        */
 
         /*for (int i = 0; i < 9; i++) {
             Gdx.app.error("Is cell alive: " + i, String.valueOf(isLive(i, true)));
@@ -80,6 +94,7 @@ public class CellularAutomaton extends ApplicationAdapter {
         if (null != Gdx.input.getInputProcessor())
             input.addProcessor(Gdx.input.getInputProcessor());
         Gdx.input.setInputProcessor(input);
+        input.addProcessor(stage);
         input.addProcessor(new InputProcessor() {
             @Override
             public boolean keyDown(int keycode) {
@@ -103,9 +118,13 @@ public class CellularAutomaton extends ApplicationAdapter {
 
             @Override
             public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-                int x = getRealX((int) ((screenX - pixmapLeftMargin) / scale));
-                int y = getRealY((int) ((screenY - pixmapDownMargin) / scale));
-                mapBool[x][y] = !mapBool[x][y];
+                int x = ((int) ((screenX - pixmapLeftMargin) / scale));
+                int y = ((int) ((screenY + pixmapDownMargin - Gdx.graphics.getHeight()) / scale + height));
+                Gdx.app.debug("touchUp", "x = " + x + ", y = " + y);
+                if (x >= 0 && x < width && y >= 0 && y < height) {
+                    mapBool[x][y] = !mapBool[x][y];
+                    renderNow = true;
+                }
                 return false;
             }
 
@@ -125,23 +144,88 @@ public class CellularAutomaton extends ApplicationAdapter {
             }
         });
 
+
         skin = new Skin(Gdx.files.internal("data/uiskin.json"));
 
+        final float actualWidth = width * scale, actualHeight = height * scale, heightLeft = Gdx.graphics.getHeight() - actualHeight - pixmapDownMargin;
         image = new Image(map);
-        image.setBounds(pixmapLeftMargin, pixmapDownMargin, (int) (width * scale), (int) (height * scale));
+        image.setBounds(pixmapLeftMargin, pixmapDownMargin, actualWidth, actualHeight);
         stage.addActor(image);
 
-        //TODO image buttons
-//        pause = new ImageButton();
-//        pause.setSkin(skin);
-//        stage.addActor(pause);
+//        TODO image buttons
+        try {
+            pause = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("pause.svg").readString()))));
+        } catch (TranscoderException e) {
+            e.printStackTrace();
+        }
+        pause.setSkin(skin);
+        pause.setBounds(pixmapLeftMargin, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
+        pause.addCaptureListener(new EventListener() {
+            @Override
+            public boolean handle(Event event) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                    isRunning = false;
+                    Gdx.app.debug("pause", "paused");
+                }
+                return false;
+            }
+        });
+        stage.addActor(pause);
+
+        try {
+            start = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("caret-right.svg").readString()))));
+        } catch (TranscoderException e) {
+            e.printStackTrace();
+        }
+        start.setSkin(skin);
+        start.setBounds(pixmapLeftMargin + actualWidth / 4, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
+        start.addCaptureListener(new EventListener() {
+            @Override
+            public boolean handle(Event event) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                    isRunning = true;
+                    Gdx.app.debug("start", "resued");
+                }
+                return false;
+            }
+        });
+        stage.addActor(start);
+
+        try {
+            randomize = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("reload.svg").readString()))));
+        } catch (TranscoderException e) {
+            e.printStackTrace();
+        }
+        randomize.setSkin(skin);
+        randomize.setBounds(pixmapLeftMargin + actualWidth / 2, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
+        randomize.addCaptureListener(new EventListener() {
+            @Override
+            public boolean handle(Event event) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                    for (int i = 0; i < width; i++) {
+                        for (int j = 0; j < height; j++) {
+                            mapBool[i][j] = random.nextBoolean();
+                        }
+                    }
+                    renderNow=true;
+                    Gdx.app.debug("randomize", "randomized");
+                }
+                return false;
+            }
+        });
+        stage.addActor(randomize);
     }
 
     @Override
     public void render() {
-        if (isRunning) {
+        if (isRunning && TimeUtils.timeSinceMillis(lastRefreshTime) >= 200) {
 //        oldMapBool = mapBool.clone();
-            System.arraycopy(mapBool, 0, oldMapBool, 0, mapBool.length);
+            renderNow = true;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    oldMapBool[x][y]=mapBool[x][y];
+                }
+            }
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
                     neighbourCount = 0;
@@ -168,6 +252,15 @@ public class CellularAutomaton extends ApplicationAdapter {
 
                     //Gdx.app.error("Cell (X:" + x + ", Y:" + y + ")", "Neighbour Count:" + neighbourCount + ", Is Alive:" + oldMapBool[x][y] + ", Will Be Alive:" + mapBool[x][y]);
 
+
+                }
+            }
+            lastRefreshTime = TimeUtils.millis();
+        }
+        if (renderNow) {
+            renderNow = false;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
                     if (mapBool[x][y]) {
                         pixmap.drawPixel(x, y, 0x87ceebff /*Color.SKY*/);
                     } else {
@@ -177,18 +270,18 @@ public class CellularAutomaton extends ApplicationAdapter {
                 }
             }
         }
-
         map = new TextureRegion(new Texture(pixmap));
 //        map.setRegion(pixmapLeftMargin, pixmapDownMargin, (int) (width * scale), (int) (height * scale));
 //        map.setTexture(new Texture(pixmap));
         image.setDrawable(new TextureRegionDrawable(map));
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(1, 1, 1, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 //        batch.begin();
 //		batch.draw(img, 0, 0);
 //        batch.draw(map, pixmapLeftMargin, pixmapDownMargin, 0, 0, map.getRegionWidth(), map.getRegionHeight(), scale, scale, 0);
 //        batch.end();
         stage.draw();
+
     }
 
     public int getRealX(int x) {
