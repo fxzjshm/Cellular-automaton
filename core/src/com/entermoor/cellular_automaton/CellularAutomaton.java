@@ -81,12 +81,7 @@ public class CellularAutomaton extends ApplicationAdapter {
         map.setRegion(/*pixmapLeftMargin, pixmapDownMargin*/0, 0, (int) (width * scale), (int) (height * scale));
 //        map.getTexture().getTextureData().
 
-
-        for (int i = 0; i < random.nextInt(width * height / 100 + 1) + width * height / 10; i++) {
-            mapBool[random.nextInt(width)][random.nextInt(height)] = true;
-        }
-
-
+        random();
         /*for (int i = 0; i < 9; i++) {
             Gdx.app.error("Is cell alive: " + i, String.valueOf(isLive(i, true)));
             Gdx.app.error("Is cell alive: " + i, String.valueOf(isLive(i, false)));
@@ -195,13 +190,7 @@ public class CellularAutomaton extends ApplicationAdapter {
             @Override
             public boolean handle(Event event) {
                 if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
-                    for (int i = 0; i < width; i++) {
-                        for (int j = 0; j < height; j++) {
-                            mapBool[i][j] = random.nextBoolean();
-                        }
-                    }
-                    renderNow = true;
-                    Gdx.app.debug("randomize", "randomized");
+                    random();
                 }
                 return false;
             }
@@ -258,4 +247,14 @@ public class CellularAutomaton extends ApplicationAdapter {
         if (neighbourCount < 2 || neighbourCount > 3) return false;
         return isAlive;
     }*/
+
+    public void random() {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                mapBool[i][j] = random.nextBoolean();
+            }
+        }
+        renderNow = true;
+        Gdx.app.debug("randomize", "randomized");
+    }
 }
