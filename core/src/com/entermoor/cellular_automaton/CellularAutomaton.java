@@ -237,16 +237,18 @@ public class CellularAutomaton extends ApplicationAdapter {
                 }
             }
         }
+
+        /*
+        // This isn't working properly when scale != 1
+        // a new TextureRegion() is necessary, but why?
+        map.getTexture().load(map.getTexture().getTextureData());
+        */
+        map.getTexture().dispose();
         map = new TextureRegion(new Texture(pixmap));
-//        map.setRegion(pixmapLeftMargin, pixmapDownMargin, (int) (width * scale), (int) (height * scale));
-//        map.setTexture(new Texture(pixmap));
-        image.setDrawable(new TextureRegionDrawable(map));
+        ((TextureRegionDrawable) (image.getDrawable())).setRegion(map);
+
         Gdx.gl.glClearColor(1, 1, 1, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        batch.begin();
-//		batch.draw(img, 0, 0);
-//        batch.draw(map, pixmapLeftMargin, pixmapDownMargin, 0, 0, map.getRegionWidth(), map.getRegionHeight(), scale, scale, 0);
-//        batch.end();
         stage.draw();
 
     }
