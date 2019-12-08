@@ -16,8 +16,8 @@ buildscript {
         classpath 'com.android.tools.build:gradle:3.0.0'
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.5'
         classpath 'org.multi-os-engine:moe-gradle:1.3.6'
-        classpath 'net.sf.proguard:proguard-gradle:5.2.1'
-        classpath 'org.akhikhl.gretty:gretty:+'
+        classpath 'net.sf.proguard:proguard-gradle:6.0.3'
+        classpath 'org.akhikhl.gretty:gretty:2.0.0'
     }
 }
 allprojects {
@@ -96,7 +96,7 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
-        compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion:sources"
+        // compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion:sources"
     }
 }
 project(":core") {
@@ -105,7 +105,7 @@ project(":core") {
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion"
+        // compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion"
     }
 }
 project(":ios-moe") {

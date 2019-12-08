@@ -25,8 +25,6 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import org.apache.batik.transcoder.TranscoderException;
-
 import java.util.Random;
 
 import io.github.fxzjshm.gdx.svg2pixmap.Svg2Pixmap;
@@ -81,11 +79,11 @@ public class CellularAutomaton extends ApplicationAdapter {
         map.setRegion(/*pixmapLeftMargin, pixmapDownMargin*/0, 0, (int) (width * scale), (int) (height * scale));
 //        map.getTexture().getTextureData().
 
-        /*
+
         for (int i = 0; i < random.nextInt(width * height / 100 + 1) + width * height / 10; i++) {
             mapBool[random.nextInt(width)][random.nextInt(height)] = true;
         }
-        */
+
 
         /*for (int i = 0; i < 9; i++) {
             Gdx.app.error("Is cell alive: " + i, String.valueOf(isLive(i, true)));
@@ -153,11 +151,9 @@ public class CellularAutomaton extends ApplicationAdapter {
         stage.addActor(image);
 
 //        TODO image buttons
-        try {
-            pause = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("pause.svg").readString()))));
-        } catch (TranscoderException e) {
-            e.printStackTrace();
-        }
+
+        pause = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("pause.svg").readString()))));
+
         pause.setSkin(skin);
         pause.setBounds(pixmapLeftMargin, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
         pause.addCaptureListener(new EventListener() {
@@ -172,11 +168,8 @@ public class CellularAutomaton extends ApplicationAdapter {
         });
         stage.addActor(pause);
 
-        try {
-            start = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("caret-right.svg").readString()))));
-        } catch (TranscoderException e) {
-            e.printStackTrace();
-        }
+        start = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("caret-right.svg").readString()))));
+
         start.setSkin(skin);
         start.setBounds(pixmapLeftMargin + actualWidth / 4, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
         start.addCaptureListener(new EventListener() {
@@ -191,11 +184,9 @@ public class CellularAutomaton extends ApplicationAdapter {
         });
         stage.addActor(start);
 
-        try {
-            randomize = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("reload.svg").readString()))));
-        } catch (TranscoderException e) {
-            e.printStackTrace();
-        }
+
+        randomize = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("reload.svg").readString()))));
+
         randomize.setSkin(skin);
         randomize.setBounds(pixmapLeftMargin + actualWidth / 2, pixmapDownMargin + actualHeight, actualWidth / 4, heightLeft);
         randomize.addCaptureListener(new EventListener() {
@@ -207,7 +198,7 @@ public class CellularAutomaton extends ApplicationAdapter {
                             mapBool[i][j] = random.nextBoolean();
                         }
                     }
-                    renderNow=true;
+                    renderNow = true;
                     Gdx.app.debug("randomize", "randomized");
                 }
                 return false;
@@ -223,7 +214,7 @@ public class CellularAutomaton extends ApplicationAdapter {
             renderNow = true;
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    oldMapBool[x][y]=mapBool[x][y];
+                    oldMapBool[x][y] = mapBool[x][y];
                 }
             }
             for (int x = 0; x < width; x++) {
@@ -241,18 +232,17 @@ public class CellularAutomaton extends ApplicationAdapter {
                     if (3 == neighbourCount) mapBool[x][y] = true;
                     if (neighbourCount < 2 || neighbourCount > 3) mapBool[x][y] = false;
 
-                /*if(oldMapBool[x][y]){
-                    if(neighbourCount<2 || neighbourCount>3) mapBool[x][y] = false;
-                    else mapBool[x][y] = true;
-                }
-                else{
-                    if(neighbourCount==3) mapBool[x][y] = true;
-                    else mapBool[x][y] = false;
-                }*/
-
-                    //Gdx.app.error("Cell (X:" + x + ", Y:" + y + ")", "Neighbour Count:" + neighbourCount + ", Is Alive:" + oldMapBool[x][y] + ", Will Be Alive:" + mapBool[x][y]);
-
-
+                    // Another version of the rules
+                    /*
+                    if(oldMapBool[x][y]){
+                        if(neighbourCount<2 || neighbourCount>3) mapBool[x][y] = false;
+                        else mapBool[x][y] = true;
+                    }
+                    else{
+                        if(neighbourCount==3) mapBool[x][y] = true;
+                        else mapBool[x][y] = false;
+                    }
+                    */
                 }
             }
             lastRefreshTime = TimeUtils.millis();
