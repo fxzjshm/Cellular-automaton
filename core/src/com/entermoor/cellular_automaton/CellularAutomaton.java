@@ -24,6 +24,8 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
+import com.entermoor.cellular_automaton.updater.SingleThreadUpdater;
 
 import java.util.Random;
 
@@ -50,7 +52,7 @@ public class CellularAutomaton extends ApplicationAdapter {
     public boolean isRunning = true;
     public ImageButton start, pause, restart, randomize, help;
 
-    public short neighbourCount = 0;
+    public CellPoolUpdater updater;
     public long lastRefreshTime = TimeUtils.millis();
     public boolean renderNow = false;
 
@@ -205,6 +207,8 @@ public class CellularAutomaton extends ApplicationAdapter {
             }
         });
         stage.addActor(randomize);
+
+        updater = new SingleThreadUpdater(this);
     }
 
     @Override
@@ -217,34 +221,7 @@ public class CellularAutomaton extends ApplicationAdapter {
                     oldMapBool[x][y] = mapBool[x][y];
                 }
             }
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    neighbourCount = 0;
-                    if (oldMapBool[getRealX(x - 1)][getRealY(y - 1)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x)][getRealY(y - 1)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x + 1)][getRealY(y - 1)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x - 1)][getRealY(y)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x + 1)][getRealY(y)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x - 1)][getRealY(y + 1)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x)][getRealY(y + 1)]) neighbourCount++;
-                    if (oldMapBool[getRealX(x + 1)][getRealY(y + 1)]) neighbourCount++;
-
-                    if (3 == neighbourCount) mapBool[x][y] = true;
-                    if (neighbourCount < 2 || neighbourCount > 3) mapBool[x][y] = false;
-
-                    // Another version of the rules
-                    /*
-                    if(oldMapBool[x][y]){
-                        if(neighbourCount<2 || neighbourCount>3) mapBool[x][y] = false;
-                        else mapBool[x][y] = true;
-                    }
-                    else{
-                        if(neighbourCount==3) mapBool[x][y] = true;
-                        else mapBool[x][y] = false;
-                    }
-                    */
-                }
-            }
+            updater.updateCellPool(width, height, oldMapBool, mapBool);
             lastRefreshTime = TimeUtils.millis();
         }
         if (renderNow) {
@@ -272,30 +249,6 @@ public class CellularAutomaton extends ApplicationAdapter {
 //        batch.end();
         stage.draw();
 
-    }
-
-    public int getRealX(int x) {
-        if (x < 0) {
-            x = x + width;
-            x = getRealX(x);
-        }
-        if (x > width - 1) {
-            x = x - width;
-            x = getRealX(x);
-        }
-        return x;
-    }
-
-    public int getRealY(int y) {
-        if (y < 0) {
-            y = y + height;
-            y = getRealY(y);
-        }
-        if (y > height - 1) {
-            y = y - height;
-            y = getRealY(y);
-        }
-        return y;
     }
 
     /*public static boolean isLive(int neighbourCount, boolean isAlive) {
