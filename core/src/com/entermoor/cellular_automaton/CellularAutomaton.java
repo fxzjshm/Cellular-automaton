@@ -27,7 +27,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
 import com.entermoor.cellular_automaton.updater.SingleThreadUpdater;
 
+import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
 
 import io.github.fxzjshm.gdx.svg2pixmap.Svg2Pixmap;
 
@@ -53,6 +55,7 @@ public class CellularAutomaton extends ApplicationAdapter {
     public ImageButton start, pause, restart, randomize, help;
 
     public CellPoolUpdater updater;
+    public Set<CellPoolUpdater> updaters = new LinkedHashSet<CellPoolUpdater>(2);
     public long lastRefreshTime = TimeUtils.millis();
     public boolean renderNow = false;
 
@@ -206,9 +209,7 @@ public class CellularAutomaton extends ApplicationAdapter {
 //        oldMapBool = mapBool.clone();
             renderNow = true;
             for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    oldMapBool[x][y] = mapBool[x][y];
-                }
+                if (height >= 0) System.arraycopy(mapBool[x], 0, oldMapBool[x], 0, height);
             }
             updater.updateCellPool(width, height, oldMapBool, mapBool);
             lastRefreshTime = TimeUtils.millis();
@@ -225,16 +226,16 @@ public class CellularAutomaton extends ApplicationAdapter {
                     }
                 }
             }
-        }
 
-        /*
-        // This isn't working properly when scale != 1
-        // a new TextureRegion() is necessary, but why?
-        map.getTexture().load(map.getTexture().getTextureData());
-        */
-        map.getTexture().dispose();
-        map = new TextureRegion(new Texture(pixmap));
-        ((TextureRegionDrawable) (image.getDrawable())).setRegion(map);
+            /*
+            // This isn't working properly when scale != 1
+            // a new TextureRegion() is necessary, but why?
+            map.getTexture().load(map.getTexture().getTextureData());
+            */
+            map.getTexture().dispose();
+            map = new TextureRegion(new Texture(pixmap));
+            ((TextureRegionDrawable) (image.getDrawable())).setRegion(map);
+        }
 
         Gdx.gl.glClearColor(1, 1, 1, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

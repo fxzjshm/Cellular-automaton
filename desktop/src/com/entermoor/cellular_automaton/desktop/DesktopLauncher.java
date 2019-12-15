@@ -8,6 +8,8 @@ public class DesktopLauncher {
     public static void main(String[] arg) {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.allowSoftwareMode = true;
+        config.setFromDisplayMode(LwjglApplicationConfiguration.getDesktopDisplayMode());
+        config.fullscreen = false;
         new LwjglApplication(new CellularAutomaton(), config);
     }
 }
