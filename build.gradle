@@ -28,6 +28,7 @@ allprojects {
     ext {
         appName = "Cellular Automaton"
         gdxVersion = '1.9.9'
+        lwjglVersion = '3.2.0'
         roboVMVersion = '2.3.5'
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.0'
@@ -54,7 +55,8 @@ project(":desktop") {
 
     dependencies {
         compile project(":core")
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        compile "org.lwjgl:lwjgl-opencl:$lwjglVersion"
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }

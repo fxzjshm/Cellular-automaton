@@ -56,6 +56,7 @@ public class CellularAutomaton extends ApplicationAdapter {
 
     public CellPoolUpdater updater;
     public Set<CellPoolUpdater> updaters = new LinkedHashSet<CellPoolUpdater>(2);
+    public UpdateRateTester updateRateTester;
     public long lastRefreshTime = TimeUtils.millis();
     public boolean renderNow = false;
 
@@ -71,18 +72,10 @@ public class CellularAutomaton extends ApplicationAdapter {
         pixmapLeftMargin = (int) (Gdx.graphics.getWidth() * 0.05F);
         pixmapDownMargin = (int) (Gdx.graphics.getHeight() * 0.025F);
         mapBool = new boolean[width][height];
-//        oldMapBool = mapBool.clone();
-//        System.arraycopy(mapBool, 0, oldMapBool, 0, mapBool.length);
         oldMapBool = new boolean[width][height];
-//        try {
-//            clone__Array__(mapBool);
-//        } catch (ReflectionException e) {
-//            e.printStackTrace();
-//        }
         pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         map = new TextureRegion(new Texture(pixmap));
         map.setRegion(/*pixmapLeftMargin, pixmapDownMargin*/0, 0, (int) (width * scale), (int) (height * scale));
-//        map.getTexture().getTextureData().
 
         random();
         /*for (int i = 0; i < 9; i++) {
@@ -200,7 +193,19 @@ public class CellularAutomaton extends ApplicationAdapter {
         });
         stage.addActor(randomize);
 
-        updater = new SingleThreadUpdater(this);
+        SingleThreadUpdater defaultUpdater = new SingleThreadUpdater(this);
+        updaters.add(defaultUpdater);
+        updateRateTester = new UpdateRateTester(this);
+        updateRateTester.testUpdateRate();
+        Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(updaters.size() / 10);
+        for (CellPoolUpdater updater : updaters) {
+            if (updater.updateRate < 0) wrongUpdaters.add(updater);
+        }
+        for (CellPoolUpdater updater : wrongUpdaters) {
+            updaters.remove(updater);
+        }
+
+        if (null == updater) updater = defaultUpdater;
     }
 
     @Override
