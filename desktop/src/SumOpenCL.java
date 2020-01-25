@@ -1,5 +1,17 @@
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.opencl.CL;
+import org.lwjgl.opencl.CL10;
+import org.lwjgl.opencl.CLCapabilities;
+import org.lwjgl.opencl.CLContextCallback;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
+import static org.lwjgl.demo.opencl.InfoUtil.checkCLError;
 import static org.lwjgl.opencl.CL10.CL_CONTEXT_PLATFORM;
-import static org.lwjgl.opencl.CL10.CL_DEVICE_TYPE_GPU;
+import static org.lwjgl.opencl.CL10.CL_DEVICE_TYPE_ALL;
 import static org.lwjgl.opencl.CL10.clBuildProgram;
 import static org.lwjgl.opencl.CL10.clCreateCommandQueue;
 import static org.lwjgl.opencl.CL10.clCreateContext;
@@ -9,29 +21,19 @@ import static org.lwjgl.opencl.CL10.clGetDeviceIDs;
 import static org.lwjgl.opencl.CL10.clGetPlatformIDs;
 import static org.lwjgl.opencl.CL10.clSetKernelArg1i;
 import static org.lwjgl.opencl.CL10.clSetKernelArg1p;
-import static org.lwjgl.demo.opencl.InfoUtil.checkCLError;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.opencl.CL;
-import org.lwjgl.opencl.CL10;
-import org.lwjgl.opencl.CLCapabilities;
-import org.lwjgl.opencl.CLContextCallback;
-import org.lwjgl.opencl.CLProgramCallback;
-import org.lwjgl.system.MemoryStack;
-
 public final class SumOpenCL {
 
     private static final String sumProgramSource =
-            "kernel void sum(global const float* a, global const float* b, global float* result, int const size) {"
-                    + "  const int itemId = get_global_id(0);" + "  if(itemId < size) {"
-                    + "    result[itemId] = a[itemId] + b[itemId];" + "  }" + "}";
+                      "kernel void sum(global const float* a, global const float* b, global float* result, int const size) {"
+                    + "  const int itemId = get_global_id(0);"
+                    + "  if(itemId < size) {"
+                    + "    result[itemId] = a[itemId] + b[itemId];"
+                    + "  }"
+                    + "}";
 
     private CLContextCallback clContextCB;
     private long clContext;
@@ -187,7 +189,7 @@ public final class SumOpenCL {
         }
 
 
-        clDevice = getDevice(clPlatform, clPlatformCapabilities, CL_DEVICE_TYPE_GPU);
+        clDevice = getDevice(clPlatform, clPlatformCapabilities, CL_DEVICE_TYPE_ALL);
 
         // Create the context
         PointerBuffer ctxProps = BufferUtils.createPointerBuffer(7);
