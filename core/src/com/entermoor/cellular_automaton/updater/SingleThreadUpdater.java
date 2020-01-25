@@ -14,14 +14,21 @@ public class SingleThreadUpdater extends CellPoolUpdater {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 neighbourCount = 0;
-                if (oldMapBool[getRealX(x - 1)][getRealY(y - 1)]) neighbourCount++;
-                if (oldMapBool[getRealX(x)][getRealY(y - 1)]) neighbourCount++;
-                if (oldMapBool[getRealX(x + 1)][getRealY(y - 1)]) neighbourCount++;
-                if (oldMapBool[getRealX(x - 1)][getRealY(y)]) neighbourCount++;
-                if (oldMapBool[getRealX(x + 1)][getRealY(y)]) neighbourCount++;
-                if (oldMapBool[getRealX(x - 1)][getRealY(y + 1)]) neighbourCount++;
-                if (oldMapBool[getRealX(x)][getRealY(y + 1)]) neighbourCount++;
-                if (oldMapBool[getRealX(x + 1)][getRealY(y + 1)]) neighbourCount++;
+                int xm1 = getRealX(x - 1), xp1 = getRealX(x + 1),
+                        ym1 = getRealY(y - 1), yp1 = getRealY(y + 1);
+                // TODO Skip formatter in settings
+                // @off
+                // @formatter:off
+                if (oldMapBool[xm1][ym1]) neighbourCount++;
+                if (oldMapBool[ x ][ym1]) neighbourCount++;
+                if (oldMapBool[xp1][ym1]) neighbourCount++;
+                if (oldMapBool[xm1][ y ]) neighbourCount++;
+                if (oldMapBool[xp1][ y ]) neighbourCount++;
+                if (oldMapBool[xm1][yp1]) neighbourCount++;
+                if (oldMapBool[ x ][yp1]) neighbourCount++;
+                if (oldMapBool[xp1][yp1]) neighbourCount++;
+                // @on
+                // @formatter:on
 
                 if (3 == neighbourCount) newMapBool[x][y] = true;
                 if (neighbourCount < 2 || neighbourCount > 3) newMapBool[x][y] = false;
