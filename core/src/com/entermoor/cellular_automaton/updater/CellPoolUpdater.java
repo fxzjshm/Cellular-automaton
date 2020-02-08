@@ -4,7 +4,7 @@ import com.entermoor.cellular_automaton.CellularAutomaton;
 
 public abstract class CellPoolUpdater {
     /**
-     * Parameter of the window (not the pool)
+     * of the number of cells
      */
     int width, height;
     public double updateRate;
@@ -65,4 +65,11 @@ public abstract class CellPoolUpdater {
         }
         return y;
     }
+
+
+    /*public static boolean isLive(int neighbourCount, boolean isAlive) {
+        if (3 == neighbourCount) return true;
+        if (neighbourCount < 2 || neighbourCount > 3) return false;
+        return isAlive;
+    }*/
 }
