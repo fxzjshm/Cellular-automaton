@@ -10,7 +10,7 @@ import java.util.Random;
 public class UpdateRateTester {
     CellularAutomaton main;
     int w = 800, h = 600, n = 10, seed = 20191231, correctHash = -283375405;
-    boolean[][] oldMapBool = new boolean[w][h], mapBool = oldMapBool.clone();
+    int[][] oldMapBool = new int[w][h], mapBool = oldMapBool.clone();
 
     public UpdateRateTester(CellularAutomaton main) {
         this.main = main;
@@ -26,7 +26,7 @@ public class UpdateRateTester {
         Random r = new Random(seed);
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                mapBool[i][j] = r.nextBoolean();
+                mapBool[i][j] = (r.nextBoolean() ? 1 : 0);
             }
         }
         long startTime;
@@ -43,7 +43,7 @@ public class UpdateRateTester {
         int hash = 0;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                hash += ((mapBool[i][j]) ? 1 : 0) * r.nextInt();
+                hash += (mapBool[i][j]) * r.nextInt();
             }
         }
 

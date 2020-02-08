@@ -68,7 +68,7 @@ public class UIMain extends ApplicationAdapter {
 
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    if (main.mapBool[x][y]) {
+                    if (main.mapBool[x][y] == 1) {
                         pixmap.drawPixel(x, y, 0x87ceebff /*Color.SKY*/);
                     } else {
                         pixmap.drawPixel(x, y, 0x7f7f7fff /*Color.GREY*/);

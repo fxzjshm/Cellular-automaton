@@ -45,7 +45,7 @@ public class CellFlip extends ApplicationAdapter {
                 int y = ((int) ((screenY + pixmapDownMargin - Gdx.graphics.getHeight()) / scale + height));
                 Gdx.app.debug("touchUp", "x = " + x + ", y = " + y);
                 if (x >= 0 && x < width && y >= 0 && y < height) {
-                    main.mapBool[x][y] = !main.mapBool[x][y];
+                    main.mapBool[x][y] = 1 - main.mapBool[x][y];
                     main.renderNow = true;
                 }
                 return false;
