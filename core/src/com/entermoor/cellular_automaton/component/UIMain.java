@@ -1,4 +1,4 @@
-package com.entermoor.cellular_automaton.ui;
+package com.entermoor.cellular_automaton.component;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -60,6 +60,7 @@ public class UIMain extends ApplicationAdapter {
         // stage.setDebugAll(true);
     }
 
+    @Override
     public void render() {
         final int width = main.width, height = main.height;
         if (main.renderNow) {

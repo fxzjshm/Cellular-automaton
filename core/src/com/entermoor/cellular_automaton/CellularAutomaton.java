@@ -4,12 +4,12 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.entermoor.cellular_automaton.ui.UIImageButtons;
-import com.entermoor.cellular_automaton.ui.UIMain;
+import com.entermoor.cellular_automaton.component.CellFlip;
+import com.entermoor.cellular_automaton.component.UIImageButtons;
+import com.entermoor.cellular_automaton.component.UIMain;
+import com.entermoor.cellular_automaton.component.UpdaterChooser;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
-import com.entermoor.cellular_automaton.updater.SingleThreadUpdater;
 
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -35,6 +35,9 @@ public class CellularAutomaton extends ApplicationAdapter {
     public CellPoolUpdater updater;
     public Set<CellPoolUpdater> updaters = new LinkedHashSet<CellPoolUpdater>(2);
     public UpdateRateTester updateRateTester;
+    public UpdaterChooser updaterChooser;
+
+
     public long lastRefreshTime = TimeUtils.millis();
     public boolean renderNow = false;
 
@@ -62,71 +65,13 @@ public class CellularAutomaton extends ApplicationAdapter {
             input.addProcessor(Gdx.input.getInputProcessor());
         Gdx.input.setInputProcessor(input);
         input.addProcessor(ui.stage);
-        input.addProcessor(new InputProcessor() {
-            @Override
-            public boolean keyDown(int keycode) {
-                return false;
-            }
-
-            @Override
-            public boolean keyUp(int keycode) {
-                return false;
-            }
-
-            @Override
-            public boolean keyTyped(char character) {
-                return false;
-            }
-
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                return false;
-            }
-
-            @Override
-            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-                int x = ((int) ((screenX - pixmapLeftMargin) / scale));
-                int y = ((int) ((screenY + pixmapDownMargin - Gdx.graphics.getHeight()) / scale + height));
-                Gdx.app.debug("touchUp", "x = " + x + ", y = " + y);
-                if (x >= 0 && x < width && y >= 0 && y < height) {
-                    mapBool[x][y] = !mapBool[x][y];
-                    renderNow = true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean touchDragged(int screenX, int screenY, int pointer) {
-                return false;
-            }
-
-            @Override
-            public boolean mouseMoved(int screenX, int screenY) {
-                return false;
-            }
-
-            @Override
-            public boolean scrolled(int amount) {
-                return false;
-            }
-        });
+        new CellFlip(this).create();
 
         uiImageButtons = new UIImageButtons(this);
         uiImageButtons.create();
 
-        SingleThreadUpdater defaultUpdater = new SingleThreadUpdater(this);
-        updaters.add(defaultUpdater);
-        updateRateTester = new UpdateRateTester(this);
-        updateRateTester.testUpdateRate();
-        Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(updaters.size() / 10);
-        for (CellPoolUpdater updater : updaters) {
-            if (updater.updateRate < 0) wrongUpdaters.add(updater);
-        }
-        for (CellPoolUpdater updater : wrongUpdaters) {
-            updaters.remove(updater);
-        }
-
-        if (null == updater) updater = defaultUpdater;
+        updaterChooser = new UpdaterChooser(this);
+        updaterChooser.create();
     }
 
     @Override
