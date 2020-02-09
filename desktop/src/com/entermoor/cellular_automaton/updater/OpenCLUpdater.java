@@ -7,6 +7,7 @@ import com.entermoor.cellular_automaton.CellularAutomaton;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.opencl.CL10;
 import org.lwjgl.opencl.CLContextCallback;
 
 import java.nio.IntBuffer;
@@ -20,6 +21,10 @@ import static org.lwjgl.opencl.CL10.clCreateCommandQueue;
 import static org.lwjgl.opencl.CL10.clCreateContext;
 import static org.lwjgl.opencl.CL10.clCreateKernel;
 import static org.lwjgl.opencl.CL10.clCreateProgramWithSource;
+import static org.lwjgl.opencl.CL10.clEnqueueNDRangeKernel;
+import static org.lwjgl.opencl.CL10.clEnqueueReadBuffer;
+import static org.lwjgl.opencl.CL10.clSetKernelArg1i;
+import static org.lwjgl.opencl.CL10.clSetKernelArg1p;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
@@ -35,9 +40,16 @@ public class OpenCLUpdater extends CellPoolUpdater {
 
     public long updaterProgram;
     public long clKernel;
-    public long oldMapMemory, mapMemory;
+    public long oldMapMemory = -1, mapMemory = -1;
+    public IntBuffer intBuffer;
+    public int w = 0, h = 0;
 
     public static String programSource = "";
+
+    /**
+     * A boolean to ensure this updater is fully initialized before used
+     */
+    public volatile boolean preparing = true;
 
     public OpenCLUpdater(CellularAutomaton main, long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
         super(main);
@@ -46,8 +58,43 @@ public class OpenCLUpdater extends CellPoolUpdater {
     }
 
     @Override
-    public void updateCellPool(int width, int height, boolean[][] oldMap, boolean[][] newMap) {
+    public void updateCellPool(int width, int height, int[] oldMap, int[] newMap) {
+        while (preparing) {
+            Thread.yield();
+        }
         // TODO implement updater
+        int ret;
+        if (width != w || height != h) {
+            releaseMemory();
+            w = width;
+            h = height;
+            createMemory(oldMap);
+        } else {
+            // don't need to re-create the buffer, just transfer the data
+            // (as if I'm using dGPU.
+            ret = CL10.clEnqueueWriteBuffer(clQueue, oldMapMemory, true, 0, oldMap, null, null);
+            checkCLError(ret);
+        }
+        clSetKernelArg1p(clKernel, 0, oldMapMemory);
+        clSetKernelArg1p(clKernel, 1, mapMemory);
+        clSetKernelArg1i(clKernel, 2, width);
+        clSetKernelArg1i(clKernel, 3, height);
+
+        // What? You say optimization? In my dreams...
+        final int dimensions = 1;
+        PointerBuffer globalWorkSize = BufferUtils.createPointerBuffer(dimensions);
+        globalWorkSize.put(0, w * h);
+        ret = clEnqueueNDRangeKernel(clQueue, clKernel, dimensions, null, globalWorkSize, null,
+                null, null);
+        checkCLError(ret);
+        ret = CL10.clFinish(clQueue);
+        checkCLError(ret);
+
+        ret = clEnqueueReadBuffer(clQueue, mapMemory, true, 0, intBuffer, null, null);
+        checkCLError(ret);
+        for (int i = 0; i < intBuffer.capacity(); i++) {
+            newMap[i] = intBuffer.get(i);
+        }
     }
 
     public void createContext() {
@@ -74,8 +121,8 @@ public class OpenCLUpdater extends CellPoolUpdater {
         try {
             int errcode = clBuildProgram(updaterProgram, clDevice, "", null, NULL);
             checkCLError(errcode);
-        }catch (RuntimeException e){
-            System.err.println(getProgramBuildInfoStringASCII(updaterProgram,clDevice,CL_PROGRAM_BUILD_LOG));
+        } catch (RuntimeException e) {
+            System.err.println(getProgramBuildInfoStringASCII(updaterProgram, clDevice, CL_PROGRAM_BUILD_LOG));
             throw e;
         }
     }
@@ -85,7 +132,20 @@ public class OpenCLUpdater extends CellPoolUpdater {
         checkCLError(errcode_ret);
     }
 
-    public void createMemory() {
+    public void createMemory(int[] oldMap) {
+        oldMapMemory = CL10.clCreateBuffer(clContext, CL10.CL_MEM_READ_WRITE | CL10.CL_MEM_COPY_HOST_PTR,
+                getBuffer(oldMap), errcode_ret);
+        checkCLError(errcode_ret);
+        // their size should be same, shouldn't they?
+        mapMemory = CL10.clCreateBuffer(clContext, CL10.CL_MEM_READ_WRITE, oldMap.length * 4, errcode_ret);
+        checkCLError(errcode_ret);
+
+        intBuffer = BufferUtils.createIntBuffer(oldMap.length);
+    }
+
+    public void releaseMemory() {
+        if (mapMemory != -1) CL10.clReleaseMemObject(mapMemory);
+        if (oldMapMemory != -1) CL10.clReleaseMemObject(oldMapMemory);
     }
 
     public void init() {
@@ -95,7 +155,9 @@ public class OpenCLUpdater extends CellPoolUpdater {
         createCommandQueue();
         createProgram();
         createKernel();
-        createMemory();
+        // haven't known the size yet
+        // createMemory();
+        preparing = false;
     }
 
     public void loadProgramText() {
@@ -106,5 +168,13 @@ public class OpenCLUpdater extends CellPoolUpdater {
             }
             programSource = programFile.readString();
         }
+    }
+
+    public IntBuffer getBuffer(int[] map) {
+        // Create float array from 0 to size-1.
+        IntBuffer buff = BufferUtils.createIntBuffer(map.length);
+        buff.put(map);
+        buff.rewind();
+        return buff;
     }
 }

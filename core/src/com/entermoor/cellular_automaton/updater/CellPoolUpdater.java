@@ -22,7 +22,7 @@ public abstract class CellPoolUpdater {
      * @param oldMap the map to read from
      * @param newMap the map to write to
      */
-    public abstract void updateCellPool(int width, int height, int[][] oldMap, int[][] newMap);
+    public abstract void updateCellPool(int width, int height, int[] oldMap, int[] newMap);
 
     public int getRealX(int x) {
         /*

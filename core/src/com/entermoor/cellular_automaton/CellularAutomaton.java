@@ -22,7 +22,7 @@ public class CellularAutomaton extends ApplicationAdapter {
     //  public Texture img;
     public int width, height;
     public float scale = 5;
-    public int[][] mapBool, oldMapBool;
+    public int[] mapBool, oldMapBool;
 
     public Random random = new Random();
     public InputMultiplexer input = new InputMultiplexer();
@@ -50,8 +50,8 @@ public class CellularAutomaton extends ApplicationAdapter {
 
         pixmapLeftMargin = (int) (Gdx.graphics.getWidth() * 0.05F);
         pixmapDownMargin = (int) (Gdx.graphics.getHeight() * 0.025F);
-        mapBool = new int[width][height];
-        oldMapBool = new int[width][height];
+        mapBool = new int[width * height];
+        oldMapBool = new int[width * height];
 
         ui = new UIMain(this);
         ui.create();
@@ -79,21 +79,17 @@ public class CellularAutomaton extends ApplicationAdapter {
         if (isRunning && TimeUtils.timeSinceMillis(lastRefreshTime) >= 200) {
 //        oldMapBool = mapBool.clone();
             renderNow = true;
-            for (int x = 0; x < width; x++) {
-                if (height >= 0) System.arraycopy(mapBool[x], 0, oldMapBool[x], 0, height);
-            }
+            System.arraycopy(mapBool, 0, oldMapBool, 0, width * height);
             updater.updateCellPool(width, height, oldMapBool, mapBool);
             lastRefreshTime = TimeUtils.millis();
         }
         ui.render();
-
-
     }
 
     public void random() {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                mapBool[i][j] = (random.nextBoolean() ? 1 : 0);
+                mapBool[i * height + j] = (random.nextBoolean() ? 1 : 0);
             }
         }
         renderNow = true;

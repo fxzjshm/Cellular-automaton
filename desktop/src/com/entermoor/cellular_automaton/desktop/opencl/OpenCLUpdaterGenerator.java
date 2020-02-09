@@ -1,6 +1,5 @@
 package com.entermoor.cellular_automaton.desktop.opencl;
 
-import com.badlogic.gdx.Gdx;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 import com.entermoor.cellular_automaton.updater.OpenCLUpdater;
 
@@ -34,7 +33,7 @@ public class OpenCLUpdaterGenerator {
             updaters = new LinkedHashSet<>(platformCount * 2);
             if (platformCount == 0) {
                 // throw new RuntimeException("No OpenCL platforms found.");
-                Gdx.app.log(OpenCLUpdaterGenerator.class.getSimpleName(), "No OpenCL platforms found.");
+                System.err.println("[OpenCLUpdaterGenerator] No OpenCL platforms found.");
                 return updaters;
             }
 
@@ -60,16 +59,22 @@ public class OpenCLUpdaterGenerator {
                     for (int d = 0; d < devices.capacity(); d++) {
                         long device = devices.get(d);
 
+                        OpenCLUpdater updater = new OpenCLUpdater(main, platform, device);
+                        updaters.add(updater);
                         // CLCapabilities caps = CL.createDeviceCapabilities(device, platformCaps);
-                        try {
-                            OpenCLUpdater updater = new OpenCLUpdater(main, platform, device);
-                            updater.init();
-                            updaters.add(updater);
-                        } catch (Exception e) {
-                            System.err.println("[OpenCLUpdaterGenerator] Cannot init device " + getDeviceInfoStringUTF8(device,CL_DEVICE_NAME)
-                                    + " on platform " + getPlatformInfoStringUTF8(platform,CL_PLATFORM_NAME));
-                            e.printStackTrace(System.err);
+                        new Thread(() -> {
+                            try {
+                                updater.init();
+                            } catch (Exception e) {
+                                synchronized (System.err) {
+                                    System.err.println("[OpenCLUpdaterGenerator] Cannot init device " + getDeviceInfoStringUTF8(device, CL_DEVICE_NAME)
+                                            + " on platform " + getPlatformInfoStringUTF8(platform, CL_PLATFORM_NAME));
+                                    e.printStackTrace(System.err);
+                                    updaters.remove(updater);
+                                }
+                            }
                         }
+                        ).run();
                     }
                 } catch (RuntimeException e) {
                     // problematic platform (e.g. no device available)

@@ -1,3 +1,6 @@
+// This file comes from
+// http://forum.lwjgl.org/index.php?topic=6521.0
+// only for reference. Thanks, officialhopsof!
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opencl.CL;
@@ -28,7 +31,7 @@ import static org.lwjgl.system.MemoryUtil.memUTF8;
 public final class SumOpenCL {
 
     private static final String sumProgramSource =
-                      "kernel void sum(global const float* a, global const float* b, global float* result, int const size) {"
+            "kernel void sum(global const float* a, global const float* b, global float* result, int const size) {"
                     + "  const int itemId = get_global_id(0);"
                     + "  if(itemId < size) {"
                     + "    result[itemId] = a[itemId] + b[itemId];"
@@ -71,7 +74,6 @@ public final class SumOpenCL {
         clSetKernelArg1p(clKernel, 1, bMemory);
         clSetKernelArg1p(clKernel, 2, resultMemory);
         clSetKernelArg1i(clKernel, 3, size);
-
 
 
         final int dimensions = 1;
@@ -227,7 +229,6 @@ public final class SumOpenCL {
 
         return NULL;
     }
-
 
 
     public static void main(String... args) {

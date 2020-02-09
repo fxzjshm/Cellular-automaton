@@ -10,7 +10,7 @@ import java.util.Random;
 public class UpdateRateTester {
     CellularAutomaton main;
     int w = 800, h = 600, n = 10, seed = 20191231, correctHash = -283375405;
-    int[][] oldMapBool = new int[w][h], mapBool = oldMapBool.clone();
+    int[] oldMapBool = new int[w * h], mapBool = oldMapBool.clone();
 
     public UpdateRateTester(CellularAutomaton main) {
         this.main = main;
@@ -26,15 +26,13 @@ public class UpdateRateTester {
         Random r = new Random(seed);
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                mapBool[i][j] = (r.nextBoolean() ? 1 : 0);
+                mapBool[i * h + j] = (r.nextBoolean() ? 1 : 0);
             }
         }
         long startTime;
         startTime = TimeUtils.millis();
         for (int i = 0; i < n; i++) {
-            for (int x = 0; x < w; x++) {
-                if (h >= 0) System.arraycopy(mapBool[x], 0, oldMapBool[x], 0, h);
-            }
+            System.arraycopy(mapBool, 0, oldMapBool, 0, w * h);
             updater.updateCellPool(w, h, oldMapBool, mapBool);
         }
         long duration = TimeUtils.timeSinceMillis(startTime);
@@ -43,11 +41,11 @@ public class UpdateRateTester {
         int hash = 0;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                hash += (mapBool[i][j]) * r.nextInt();
+                hash += (mapBool[i * h + j]) * r.nextInt();
             }
         }
 
-        Gdx.app.debug("testUpdateRate", String.format("%s:%.3fms, result hash %d", ClassReflection.getSimpleName(updater.getClass()), result,hash));
+        Gdx.app.debug("testUpdateRate", String.format("%s:%.3fms, result hash %d", ClassReflection.getSimpleName(updater.getClass()), result, hash));
 
         if (hash != correctHash) {
             Gdx.app.debug("testUpdateRate", "Something went wrong when testing " + ClassReflection.getSimpleName(updater.getClass()));

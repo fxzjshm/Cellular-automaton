@@ -1,9 +1,10 @@
 inline int getRealX(int x, int width);
 inline int getRealY(int y, int height);
 
-__kernel void update(__global const bool *oldMapBool, __global bool *newMapBool,
-                     __global const int *width, __global const int *height){
-    int w = *width, h = *height;
+// TODO fix unknoen behaviour on the edge
+__kernel void update(__global const int *oldMapBool, __global int *newMapBool,
+                     const int width, const int height){
+    int w = width, h = height;
     int gid = get_global_id(0);
     int x = gid / h, y = gid % h, // TODO 2D thread
         neighbourCount = 0;
@@ -25,8 +26,8 @@ __kernel void update(__global const bool *oldMapBool, __global bool *newMapBool,
     // @on
     // @formatter:on
 
-    if (3 == neighbourCount) newMapBool[xXh + y] = true;
-    if (neighbourCount < 2 || neighbourCount > 3) newMapBool[xXh + y] = false;
+    if (3 == neighbourCount) newMapBool[xXh + y] = 1;
+    if (neighbourCount < 2 || neighbourCount > 3) newMapBool[xXh + y] = 0;
 }
 
 inline int getRealX(int x, int width) {
