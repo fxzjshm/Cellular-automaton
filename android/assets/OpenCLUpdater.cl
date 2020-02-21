@@ -26,8 +26,11 @@ __kernel void update(__global const int *oldMapBool, __global int *newMapBool,
     // @on
     // @formatter:on
 
-    if (3 == neighbourCount) newMapBool[xXh + y] = 1;
-    if (neighbourCount < 2 || neighbourCount > 3) newMapBool[xXh + y] = 0;
+    if (3 == neighbourCount) newMapBool[gid] = 1;
+    else if (2 == neighbourCount) newMapBool[gid] = oldMapBool[gid];
+    else newMapBool[gid] = 0;
+
+    // if(newMapBool[xXh + y] != oldMapBool[xXh + y])printf("%d,%d,%d\n",x,y,neighbourCount);
 }
 
 inline int getRealX(int x, int width) {

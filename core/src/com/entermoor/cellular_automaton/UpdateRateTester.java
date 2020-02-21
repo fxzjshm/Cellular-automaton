@@ -38,6 +38,7 @@ public class UpdateRateTester {
         long duration = TimeUtils.timeSinceMillis(startTime);
         double result = 1.0 * duration / n;
 
+        r.setSeed(seed);
         int hash = 0;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {

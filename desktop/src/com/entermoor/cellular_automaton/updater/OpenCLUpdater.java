@@ -137,7 +137,7 @@ public class OpenCLUpdater extends CellPoolUpdater {
                 getBuffer(oldMap), errcode_ret);
         checkCLError(errcode_ret);
         // their size should be same, shouldn't they?
-        mapMemory = CL10.clCreateBuffer(clContext, CL10.CL_MEM_READ_WRITE, oldMap.length * 4, errcode_ret);
+        mapMemory = CL10.clCreateBuffer(clContext, CL10.CL_MEM_READ_WRITE, Integer.toUnsignedLong(oldMap.length) << 2, errcode_ret);
         checkCLError(errcode_ret);
 
         intBuffer = BufferUtils.createIntBuffer(oldMap.length);
