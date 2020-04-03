@@ -27,9 +27,9 @@ allprojects {
     version = '1.0'
     ext {
         appName = "Cellular Automaton"
-        gdxVersion = '1.9.9'
-        lwjglVersion = '3.2.0'
-        roboVMVersion = '2.3.5'
+        gdxVersion = '1.9.10'
+        lwjglVersion = '3.2.1'
+        roboVMVersion = '2.3.6'
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.0'
         aiVersion = '1.8.0'
