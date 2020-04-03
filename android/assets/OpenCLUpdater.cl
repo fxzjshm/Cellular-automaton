@@ -1,7 +1,7 @@
 inline int getRealX(int x, int width);
 inline int getRealY(int y, int height);
 
-// TODO fix unknoen behaviour on the edge
+// TODO fix unknown behaviour on the edge
 __kernel void update(__global const int *oldMapBool, __global int *newMapBool,
                      const int width, const int height){
     int w = width, h = height;

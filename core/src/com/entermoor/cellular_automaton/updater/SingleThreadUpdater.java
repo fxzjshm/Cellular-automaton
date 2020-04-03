@@ -50,4 +50,9 @@ public class SingleThreadUpdater extends CellPoolUpdater {
             }
         }
     }
+
+    @Override
+    public String getName() {
+        return "SingleThreadUpdater";
+    }
 }

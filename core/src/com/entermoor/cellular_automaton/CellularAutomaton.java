@@ -5,6 +5,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.entermoor.cellular_automaton.component.CellFlip;
 import com.entermoor.cellular_automaton.component.UIImageButtons;
 import com.entermoor.cellular_automaton.component.UIMain;
@@ -18,6 +19,7 @@ import java.util.Set;
 public class CellularAutomaton extends ApplicationAdapter {
 
     public static /* final */ int pixmapLeftMargin, pixmapDownMargin;
+    public static AsyncExecutor asyncExecutor = new AsyncExecutor(Runtime.getRuntime().availableProcessors());
 
     //  public Texture img;
     public int width, height;

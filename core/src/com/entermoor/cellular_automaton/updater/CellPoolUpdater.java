@@ -2,6 +2,7 @@ package com.entermoor.cellular_automaton.updater;
 
 import com.entermoor.cellular_automaton.CellularAutomaton;
 
+// TODO always remember to sync code between SingleThreadUpdater,  and OpenCLUpdater
 public abstract class CellPoolUpdater {
     /**
      * of the number of cells
@@ -65,6 +66,8 @@ public abstract class CellPoolUpdater {
         }
         return y;
     }
+
+    public abstract String getName();
 
 
     /*public static boolean isLive(int neighbourCount, boolean isAlive) {

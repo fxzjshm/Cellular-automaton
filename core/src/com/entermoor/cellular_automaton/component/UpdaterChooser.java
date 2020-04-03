@@ -32,6 +32,7 @@ public class UpdaterChooser extends ApplicationAdapter {
             main.updaters.remove(updater);
         }
 
-        if (null == main.updater) main.updater = defaultUpdater;
+        if (null == main.updater || !(main.updaters.contains(main.updater)))
+            main.updater = defaultUpdater;
     }
 }

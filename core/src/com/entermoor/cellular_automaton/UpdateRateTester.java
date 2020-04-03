@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class UpdateRateTester {
@@ -46,7 +47,7 @@ public class UpdateRateTester {
             }
         }
 
-        Gdx.app.debug("testUpdateRate", String.format("%s:%.3fms, result hash %d", ClassReflection.getSimpleName(updater.getClass()), result, hash));
+        Gdx.app.debug("testUpdateRate", String.format(Locale.getDefault(), "%s:%.3fms, result hash %d", updater.getName(), result, hash));
 
         if (hash != correctHash) {
             Gdx.app.debug("testUpdateRate", "Something went wrong when testing " + ClassReflection.getSimpleName(updater.getClass()));

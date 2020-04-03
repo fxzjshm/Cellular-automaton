@@ -11,12 +11,16 @@ public class DesktopLauncher {
     public static void main(String[] arg) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         CellularAutomaton main = new CellularAutomaton();
-        main.updaters.addAll(OpenCLUpdaterGenerator.generateOpenCLUpdater(main));
-        for (CellPoolUpdater updater : main.updaters) {
-            if (updater instanceof OpenCLUpdater) {
-                main.updater = updater;
+        CellularAutomaton.asyncExecutor.submit(() -> {
+            main.updaters.addAll(OpenCLUpdaterGenerator.generateOpenCLUpdater(main));
+
+            for (CellPoolUpdater updater : main.updaters) {
+                if (updater instanceof OpenCLUpdater) {
+                    main.updater = updater;
+                }
             }
-        }
+            return null;
+        });
         new Lwjgl3Application(main, config);
     }
 }

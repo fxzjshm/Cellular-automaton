@@ -11,10 +11,15 @@ import org.lwjgl.opencl.CL10;
 import org.lwjgl.opencl.CLContextCallback;
 
 import java.nio.IntBuffer;
+import java.util.Locale;
 
 import static org.lwjgl.demo.opencl.InfoUtil.checkCLError;
+import static org.lwjgl.demo.opencl.InfoUtil.getDeviceInfoStringUTF8;
+import static org.lwjgl.demo.opencl.InfoUtil.getPlatformInfoStringUTF8;
 import static org.lwjgl.demo.opencl.InfoUtil.getProgramBuildInfoStringASCII;
 import static org.lwjgl.opencl.CL10.CL_CONTEXT_PLATFORM;
+import static org.lwjgl.opencl.CL10.CL_DEVICE_NAME;
+import static org.lwjgl.opencl.CL10.CL_PLATFORM_NAME;
 import static org.lwjgl.opencl.CL10.CL_PROGRAM_BUILD_LOG;
 import static org.lwjgl.opencl.CL10.clBuildProgram;
 import static org.lwjgl.opencl.CL10.clCreateCommandQueue;
@@ -30,6 +35,7 @@ import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class OpenCLUpdater extends CellPoolUpdater {
     public long clPlatform, clDevice;
+    public String platformName, deviceName, updaterName;
     // public CLCapabilities platformCapabilities, deviceCapabilities;
     public IntBuffer errcode_ret;
 
@@ -55,6 +61,9 @@ public class OpenCLUpdater extends CellPoolUpdater {
         super(main);
         clPlatform = platform;
         clDevice = device;
+        platformName = getPlatformInfoStringUTF8(platform, CL_PLATFORM_NAME);
+        deviceName = getDeviceInfoStringUTF8(device, CL_DEVICE_NAME);
+        updaterName = String.format(Locale.getDefault(), "OpenCLUpdater(%s on %s)", deviceName, platformName);
     }
 
     @Override
@@ -95,6 +104,23 @@ public class OpenCLUpdater extends CellPoolUpdater {
         for (int i = 0; i < intBuffer.capacity(); i++) {
             newMap[i] = intBuffer.get(i);
         }
+    }
+
+    @Override
+    public String getName() {
+        return updaterName;
+    }
+
+    public void init() {
+        errcode_ret = BufferUtils.createIntBuffer(1);
+        // since we have had platform id and device id, we don't need to detect them.
+        createContext();
+        createCommandQueue();
+        createProgram();
+        createKernel();
+        // haven't known the size yet
+        // createMemory();
+        preparing = false;
     }
 
     public void createContext() {
@@ -146,18 +172,6 @@ public class OpenCLUpdater extends CellPoolUpdater {
     public void releaseMemory() {
         if (mapMemory != -1) CL10.clReleaseMemObject(mapMemory);
         if (oldMapMemory != -1) CL10.clReleaseMemObject(oldMapMemory);
-    }
-
-    public void init() {
-        errcode_ret = BufferUtils.createIntBuffer(1);
-        // since we have had platform id and device id, we don't need to detect them.
-        createContext();
-        createCommandQueue();
-        createProgram();
-        createKernel();
-        // haven't known the size yet
-        // createMemory();
-        preparing = false;
     }
 
     public void loadProgramText() {

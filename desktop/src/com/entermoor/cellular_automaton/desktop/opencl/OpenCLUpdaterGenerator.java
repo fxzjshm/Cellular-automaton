@@ -8,14 +8,12 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lwjgl.demo.opencl.InfoUtil.checkCLError;
-import static org.lwjgl.demo.opencl.InfoUtil.getDeviceInfoStringUTF8;
 import static org.lwjgl.demo.opencl.InfoUtil.getPlatformInfoStringUTF8;
 import static org.lwjgl.opencl.CL10.CL_CONTEXT_PLATFORM;
-import static org.lwjgl.opencl.CL10.CL_DEVICE_NAME;
 import static org.lwjgl.opencl.CL10.CL_DEVICE_TYPE_ALL;
 import static org.lwjgl.opencl.CL10.CL_PLATFORM_NAME;
 import static org.lwjgl.opencl.CL10.clGetDeviceIDs;
@@ -30,7 +28,7 @@ public class OpenCLUpdaterGenerator {
             IntBuffer pi = stack.mallocInt(1);
             checkCLError(clGetPlatformIDs(null, pi));
             int platformCount = pi.get(0);
-            updaters = new LinkedHashSet<>(platformCount * 2);
+            updaters = ConcurrentHashMap.newKeySet(platformCount * 2);
             if (platformCount == 0) {
                 // throw new RuntimeException("No OpenCL platforms found.");
                 System.err.println("[OpenCLUpdaterGenerator] No OpenCL platforms found.");
@@ -62,23 +60,23 @@ public class OpenCLUpdaterGenerator {
                         OpenCLUpdater updater = new OpenCLUpdater(main, platform, device);
                         updaters.add(updater);
                         // CLCapabilities caps = CL.createDeviceCapabilities(device, platformCaps);
-                        new Thread(() -> {
+                        CellularAutomaton.asyncExecutor.submit(() -> {
                             try {
                                 updater.init();
                             } catch (Exception e) {
                                 synchronized (System.err) {
-                                    System.err.println("[OpenCLUpdaterGenerator] Cannot init device " + getDeviceInfoStringUTF8(device, CL_DEVICE_NAME)
-                                            + " on platform " + getPlatformInfoStringUTF8(platform, CL_PLATFORM_NAME));
+                                    System.err.println("[OpenCLUpdaterGenerator] Cannot init device " + updater.deviceName
+                                            + " on platform " + updater.platformName);
                                     e.printStackTrace(System.err);
                                     updaters.remove(updater);
                                 }
                             }
-                        }
-                        ).run();
+                            return null;
+                        });
                     }
                 } catch (RuntimeException e) {
                     // problematic platform (e.g. no device available)
-                    System.err.println("[OpenCLUpdaterGenerator] Problematic platform : " + getPlatformInfoStringUTF8(platform,CL_PLATFORM_NAME));
+                    System.err.println("[OpenCLUpdaterGenerator] Problematic platform : " + getPlatformInfoStringUTF8(platform, CL_PLATFORM_NAME));
                     e.printStackTrace(System.err);
                 }
             }
