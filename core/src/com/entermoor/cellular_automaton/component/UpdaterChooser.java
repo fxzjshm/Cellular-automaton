@@ -1,9 +1,11 @@
 package com.entermoor.cellular_automaton.component;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 import com.entermoor.cellular_automaton.UpdateRateTester;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
+import com.entermoor.cellular_automaton.updater.MultiThreadUpdater;
 import com.entermoor.cellular_automaton.updater.SingleThreadUpdater;
 
 import java.util.LinkedHashSet;
@@ -22,6 +24,9 @@ public class UpdaterChooser extends ApplicationAdapter {
     public void create() {
         SingleThreadUpdater defaultUpdater = new SingleThreadUpdater(main);
         main.updaters.add(defaultUpdater);
+        MultiThreadUpdater multiThreadUpdater = new MultiThreadUpdater(main);
+        main.updaters.add(multiThreadUpdater);
+
         main.updateRateTester = new UpdateRateTester(main);
         main.updateRateTester.testUpdateRate();
         Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(main.updaters.size() / 10);
@@ -32,7 +37,12 @@ public class UpdaterChooser extends ApplicationAdapter {
             main.updaters.remove(updater);
         }
 
-        if (null == main.updater || !(main.updaters.contains(main.updater)))
-            main.updater = defaultUpdater;
+        main.updaters.remove(multiThreadUpdater); // Why is it slower?
+
+        if (null == main.updater || !(main.updaters.contains(main.updater))) {
+            if (main.updaters.contains(multiThreadUpdater)) main.updater = multiThreadUpdater;
+            else main.updater = defaultUpdater;
+        }
+        Gdx.app.debug("UpdaterChooser", "Chosen " + main.updater.getName());
     }
 }

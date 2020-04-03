@@ -1,7 +1,7 @@
 package com.entermoor.cellular_automaton;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.PerformanceCounter;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
 
@@ -12,6 +12,7 @@ public class UpdateRateTester {
     CellularAutomaton main;
     int w = 800, h = 600, n = 10, seed = 20191231, correctHash = -283375405;
     int[] oldMapBool = new int[w * h], mapBool = oldMapBool.clone();
+    PerformanceCounter pc = new PerformanceCounter("UpdateRatePerformanceCounter", n);
 
     public UpdateRateTester(CellularAutomaton main) {
         this.main = main;
@@ -30,14 +31,15 @@ public class UpdateRateTester {
                 mapBool[i * h + j] = (r.nextBoolean() ? 1 : 0);
             }
         }
-        long startTime;
-        startTime = TimeUtils.millis();
+        pc.reset();
         for (int i = 0; i < n; i++) {
+            pc.start();
             System.arraycopy(mapBool, 0, oldMapBool, 0, w * h);
             updater.updateCellPool(w, h, oldMapBool, mapBool);
+            pc.stop();
+            pc.tick();
         }
-        long duration = TimeUtils.timeSinceMillis(startTime);
-        double result = 1.0 * duration / n;
+        double result = pc.time.average * 1000f;
 
         r.setSeed(seed);
         int hash = 0;
