@@ -35,12 +35,12 @@ public abstract class CellPoolUpdater {
         // @off
         // @formatter:off
         if (oldMapBool[xm1Xh + ym1] == 1) neighbourCount++;
-        if (oldMapBool[xXh + ym1] == 1) neighbourCount++;
+        if (oldMapBool[ xXh  + ym1] == 1) neighbourCount++;
         if (oldMapBool[xp1Xh + ym1] == 1) neighbourCount++;
-        if (oldMapBool[xm1Xh + y] == 1) neighbourCount++;
-        if (oldMapBool[xp1Xh + y] == 1) neighbourCount++;
+        if (oldMapBool[xm1Xh +  y ] == 1) neighbourCount++;
+        if (oldMapBool[xp1Xh +  y ] == 1) neighbourCount++;
         if (oldMapBool[xm1Xh + yp1] == 1) neighbourCount++;
-        if (oldMapBool[xXh + yp1] == 1) neighbourCount++;
+        if (oldMapBool[ xXh  + yp1] == 1) neighbourCount++;
         if (oldMapBool[xp1Xh + yp1] == 1) neighbourCount++;
         // @on
         // @formatter:on

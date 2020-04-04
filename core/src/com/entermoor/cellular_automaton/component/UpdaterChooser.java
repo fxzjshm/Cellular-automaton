@@ -37,8 +37,6 @@ public class UpdaterChooser extends ApplicationAdapter {
             main.updaters.remove(updater);
         }
 
-        main.updaters.remove(multiThreadUpdater); // Why is it slower?
-
         if (null == main.updater || !(main.updaters.contains(main.updater))) {
             if (main.updaters.contains(multiThreadUpdater)) main.updater = multiThreadUpdater;
             else main.updater = defaultUpdater;

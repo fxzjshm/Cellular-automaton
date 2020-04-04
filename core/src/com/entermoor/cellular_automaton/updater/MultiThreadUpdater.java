@@ -24,11 +24,11 @@ public class MultiThreadUpdater extends CellPoolUpdater {
         final int N = width * height;
         final AtomicInteger finishedThreadCount = new AtomicInteger();
         for (int i = 0; i < nThread; i++) {
-            final int finalI = i;
+            final int id = i;
             CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
                 @Override
                 public Object call() {
-                    for (int gid = finalI; gid < N; gid++) {
+                    for (int gid = id; gid < N; gid += nThread) {
                         int x = gid / height, y = gid % height;
                         updateSingleCell(width, height, oldMapBool, newMapBool, x, y);
                     }
