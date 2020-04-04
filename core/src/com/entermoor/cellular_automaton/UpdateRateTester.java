@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class UpdateRateTester {
     CellularAutomaton main;
-    int w = 800, h = 600, n = 10, seed = 20191231, correctHash = -283375405;
+    int w = 1920, h = 1080, n = 10, seed = 20191231, correctHash = -1594827312;
     int[] oldMapBool = new int[w * h], mapBool = oldMapBool.clone();
     PerformanceCounter pc = new PerformanceCounter("UpdateRatePerformanceCounter", n);
 

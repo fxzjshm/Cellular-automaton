@@ -5,9 +5,7 @@ A (cellular automaton)[https://en.wikipedia.org/wiki/Cellular_automaton], curren
 ## Credits
 (libGDX)[https://github.com/libgdx/libgdx/] the basic platform.
 (danklammer/bytesize-icons)[https://github.com/danklammer/bytesize-icons] used as icons of buttons.
-
-## Other dependencies
-(fxzjshm/gdx-svg2pixmap)[https://github.com/fxzjshm/gdx-svg2pixmap] for converting SVG files to Pixmaps.
+(Rprop/ndk_dlopen)[https://github.com/Rprop/ndk_dlopen] for open library on Android
 
 ## Licesce
 See LICENSE file.
