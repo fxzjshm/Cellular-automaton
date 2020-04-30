@@ -1,8 +1,5 @@
 package com.entermoor.cellular_automaton.updater;
 
-import com.badlogic.gdx.Files;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3FileHandle;
-import com.badlogic.gdx.files.FileHandle;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 
 import org.lwjgl.BufferUtils;
@@ -33,11 +30,12 @@ import static org.lwjgl.opencl.CL10.clSetKernelArg1p;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
-public class OpenCLUpdater extends CellPoolUpdater {
+public class DesktopOpenCLUpdater extends OpenCLUpdater {
     public long clPlatform, clDevice;
     public String platformName, deviceName, updaterName;
     // public CLCapabilities platformCapabilities, deviceCapabilities;
-    public IntBuffer errcode_ret;
+    public IntBuffer errcode_ret = BufferUtils.createIntBuffer(1);
+    ;
 
     public long clContext;
     public CLContextCallback clContextCB;
@@ -48,16 +46,8 @@ public class OpenCLUpdater extends CellPoolUpdater {
     public long clKernel;
     public long oldMapMemory = -1, mapMemory = -1;
     public IntBuffer intBuffer;
-    public int w = 0, h = 0;
 
-    public static String programSource = "";
-
-    /**
-     * A boolean to ensure this updater is fully initialized before used
-     */
-    public volatile boolean preparing = true;
-
-    public OpenCLUpdater(CellularAutomaton main, long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
+    public DesktopOpenCLUpdater(CellularAutomaton main, long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
         super(main);
         clPlatform = platform;
         clDevice = device;
@@ -111,18 +101,7 @@ public class OpenCLUpdater extends CellPoolUpdater {
         return updaterName;
     }
 
-    public void init() {
-        errcode_ret = BufferUtils.createIntBuffer(1);
-        // since we have had platform id and device id, we don't need to detect them.
-        createContext();
-        createCommandQueue();
-        createProgram();
-        createKernel();
-        // haven't known the size yet
-        // createMemory();
-        preparing = false;
-    }
-
+    @Override
     public void createContext() {
         // Create the context
         PointerBuffer ctxProps = BufferUtils.createPointerBuffer(7);
@@ -134,12 +113,14 @@ public class OpenCLUpdater extends CellPoolUpdater {
         checkCLError(errcode_ret);
     }
 
+    @Override
     public void createCommandQueue() {
         // create command queue
         clQueue = clCreateCommandQueue(clContext, clDevice, NULL, errcode_ret);
         checkCLError(errcode_ret);
     }
 
+    @Override
     public void createProgram() {
         loadProgramText();
         updaterProgram = clCreateProgramWithSource(clContext, programSource, errcode_ret);
@@ -153,11 +134,13 @@ public class OpenCLUpdater extends CellPoolUpdater {
         }
     }
 
+    @Override
     public void createKernel() {
         clKernel = clCreateKernel(updaterProgram, "update", errcode_ret);
         checkCLError(errcode_ret);
     }
 
+    @Override
     public void createMemory(int[] oldMap) {
         oldMapMemory = CL10.clCreateBuffer(clContext, CL10.CL_MEM_READ_WRITE | CL10.CL_MEM_COPY_HOST_PTR,
                 getBuffer(oldMap), errcode_ret);
@@ -169,19 +152,10 @@ public class OpenCLUpdater extends CellPoolUpdater {
         intBuffer = BufferUtils.createIntBuffer(oldMap.length);
     }
 
+    @Override
     public void releaseMemory() {
         if (mapMemory != -1) CL10.clReleaseMemObject(mapMemory);
         if (oldMapMemory != -1) CL10.clReleaseMemObject(oldMapMemory);
-    }
-
-    public void loadProgramText() {
-        if ("".equals(programSource)) {
-            FileHandle programFile = new Lwjgl3FileHandle("OpenCLUpdater.cl", Files.FileType.Internal);
-            if (!programFile.exists()) {
-                throw new IllegalStateException("No program source file found.");
-            }
-            programSource = programFile.readString();
-        }
     }
 
     public IntBuffer getBuffer(int[] map) {

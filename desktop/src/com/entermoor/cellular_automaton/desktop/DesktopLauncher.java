@@ -5,7 +5,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 import com.entermoor.cellular_automaton.desktop.opencl.OpenCLUpdaterGenerator;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
-import com.entermoor.cellular_automaton.updater.OpenCLUpdater;
+import com.entermoor.cellular_automaton.updater.DesktopOpenCLUpdater;
 
 public class DesktopLauncher {
     public static void main(String[] arg) {
@@ -15,7 +15,7 @@ public class DesktopLauncher {
             main.updaters.addAll(OpenCLUpdaterGenerator.generateOpenCLUpdater(main));
 
             for (CellPoolUpdater updater : main.updaters) {
-                if (updater instanceof OpenCLUpdater) {
+                if (updater instanceof DesktopOpenCLUpdater) {
                     main.updater = updater;
                 }
             }

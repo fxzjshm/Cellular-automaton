@@ -1,27 +1,59 @@
 #include <jni.h>
 #include <cstdio>
-#include "dlopen.h"
-
-#include <android/log.h>
+#include "libopencl.h"
 
 #define LOG_TAG "AndroidOpenCLLoader"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG , LOG_TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO , LOG_TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN , LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR , LOG_TAG, __VA_ARGS__)
+
+#include "android_log_print.h"
+#include "AndroidOpenCLLoader.h"
+#include "CLUtil.h"
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_entermoor_cellular_1automaton_android_opencl_AndroidOpenCLLoader_loadOpenCLLibrary(
+Java_com_entermoor_cellular_1automaton_android_opencl_AndroidOpenCLLoader_loadOpenCLLibrary0(
         JNIEnv *env, jclass jclazz) {
-    // TODO: implement loadOpenCLLibrary()
-    ndk_init(env);
-    void *handle;
-    handle = ndk_dlopen("/vendor/lib64/egl/libGLES_1_mali.so", RTLD_NOW);
-    if (!handle) {
-        LOGE("%s", ndk_dlerror());
+    try {
+        ndk_init(env);
+        cl_int ret = 0;
+
+        cl_uint platformCount = 0;
+        ret = clGetPlatformIDs(0, 0, &platformCount);
+        checkCLError(ret);
+
+        cl_platform_id *platforms = new cl_platform_id[platformCount];
+        ret = clGetPlatformIDs(platformCount, platforms, 0);
+        checkCLError(ret);
+
+        // Assume there is one device available on Android
+        cl_uint selected_platform_index = platformCount;
+        cl_device_id selected_device_id;
+        cl_platform_id selected_platform_id;
+        for (cl_uint i = 0; i < platformCount; ++i) {
+            cl_platform_id platform = platforms[i];
+            cl_uint numDevices = 0;
+            cl_device_id *devices = NULL;
+            ret = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
+            checkCLError(ret);
+            if (numDevices > 0) //GPU available.
+            {
+                devices = (cl_device_id *) malloc(numDevices * sizeof(cl_device_id));
+                ret = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
+                checkCLError(ret);
+                selected_device_id = devices[0];
+                selected_platform_index = i;
+                selected_platform_id = platform;
+                break;
+            }
+        }
+        if (selected_platform_index == platformCount) {
+            LOGE("No usable platform found.");
+            return -1;
+        } else {
+            platformId = selected_platform_id;
+            deviceId = selected_device_id;
+            return 0;
+        }
+    } catch (...) {
         return -1;
     }
-    return 0;
 }

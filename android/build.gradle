@@ -20,7 +20,7 @@ android {
         targetSdkVersion 20
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                cppFlags "-std=c++11 -frtti -fexceptions"
             }
         }
         ndk {

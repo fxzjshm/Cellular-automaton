@@ -6,5 +6,9 @@ public class AndroidOpenCLLoader {
         System.loadLibrary("cellular-automaton-android-jni");
     }
 
-    public static native int loadOpenCLLibrary();
+    public static native int loadOpenCLLibrary0();
+
+    public static int loadOpenCLLibrary() {
+        return loadOpenCLLibrary0();
+    }
 }
