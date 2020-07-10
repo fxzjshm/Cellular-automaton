@@ -106,6 +106,10 @@ static int open_libopencl_so()
     {
       path = (char *) default_so_paths[i];
       so_handle = __dlopen(path, RTLD_LAZY);
+      if(so_handle)
+      {
+          return 0;
+      }
     }
   }
 

@@ -1,12 +1,9 @@
-#include <jni.h>
-#include <cstdio>
-#include "libopencl.h"
-
-#define LOG_TAG "AndroidOpenCLLoader"
-
-#include "android_log_print.h"
 #include "AndroidOpenCLLoader.h"
-#include "CLUtil.h"
+
+extern "C" {
+cl_platform_id platformId;
+cl_device_id deviceId;
+}
 
 extern "C"
 JNIEXPORT jint JNICALL
@@ -26,18 +23,18 @@ Java_com_entermoor_cellular_1automaton_android_opencl_AndroidOpenCLLoader_loadOp
 
         // Assume there is one device available on Android
         cl_uint selected_platform_index = platformCount;
-        cl_device_id selected_device_id;
-        cl_platform_id selected_platform_id;
+        cl_device_id selected_device_id = NULL;
+        cl_platform_id selected_platform_id = NULL;
         for (cl_uint i = 0; i < platformCount; ++i) {
             cl_platform_id platform = platforms[i];
             cl_uint numDevices = 0;
             cl_device_id *devices = NULL;
             ret = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
             checkCLError(ret);
-            if (numDevices > 0) //GPU available.
+            if (numDevices > 0) // device available.
             {
                 devices = (cl_device_id *) malloc(numDevices * sizeof(cl_device_id));
-                ret = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
+                ret = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, numDevices, devices, NULL);
                 checkCLError(ret);
                 selected_device_id = devices[0];
                 selected_platform_index = i;

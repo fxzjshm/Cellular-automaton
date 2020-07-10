@@ -1,8 +1,16 @@
-#include <stdexcept>
+#pragma once
 
-void checkCLError(cl_int errcode) {
-    if (errcode != CL_SUCCESS) {
-        LOGE("OpenCL error [%d]", errcode);
-        throw errcode;
-    }
+#include "libopencl.h"
+#include <stdexcept>
+#include "android_log_print.h"
+
+#ifndef LOG_TAG
+#define LOG_TAG "CLUtil"
+#endif
+
+extern "C" {
+void checkCLError(cl_int errcode);
+
+char* getPlatformInfo(cl_platform_id platformId, cl_platform_info info);
+char* getDeviceInfo(cl_device_id deviceId, cl_platform_info info);
 }

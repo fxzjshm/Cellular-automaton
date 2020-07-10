@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.utils.async.AsyncTask;
 import com.entermoor.cellular_automaton.android.opencl.AndroidOpenCLLoader;
 import com.entermoor.cellular_automaton.updater.AndroidOpenCLUpdater;
 
@@ -12,9 +13,27 @@ public class AndroidLauncher extends AndroidApplication {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        CellularAutomaton main = new CellularAutomaton();
+        final CellularAutomaton main = new CellularAutomaton();
         if (AndroidOpenCLLoader.loadOpenCLLibrary() == 0) {
-            main.updaters.add(new AndroidOpenCLUpdater(main));
+            final AndroidOpenCLUpdater CLUpdater = new AndroidOpenCLUpdater(main);
+            main.updaters.add(CLUpdater);
+            CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
+                @Override
+                public Object call() {
+                    try {
+                        CLUpdater.init();
+                        main.updater=CLUpdater;
+                    } catch (Exception e) {
+                        synchronized (System.err) {
+                            System.err.println("[AndroidLauncher] Cannot init device " + CLUpdater.deviceName
+                                    + " on platform " + CLUpdater.platformName);
+                            e.printStackTrace(System.err);
+                            main.updaters.remove(CLUpdater);
+                        }
+                    }
+                    return null;
+                }
+            });
         }
         initialize(main, config);
     }

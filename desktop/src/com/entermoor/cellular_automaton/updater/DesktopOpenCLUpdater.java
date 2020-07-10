@@ -32,7 +32,6 @@ import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class DesktopOpenCLUpdater extends OpenCLUpdater {
     public long clPlatform, clDevice;
-    public String platformName, deviceName, updaterName;
     // public CLCapabilities platformCapabilities, deviceCapabilities;
     public IntBuffer errcode_ret = BufferUtils.createIntBuffer(1);
     ;
@@ -154,8 +153,15 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
 
     @Override
     public void releaseMemory() {
-        if (mapMemory != -1) CL10.clReleaseMemObject(mapMemory);
-        if (oldMapMemory != -1) CL10.clReleaseMemObject(oldMapMemory);
+        int errcode;
+        if (mapMemory != -1) {
+            errcode = CL10.clReleaseMemObject(mapMemory);
+            checkCLError(errcode);
+        }
+        if (oldMapMemory != -1) {
+            errcode = CL10.clReleaseMemObject(oldMapMemory);
+            checkCLError(errcode);
+        }
     }
 
     public IntBuffer getBuffer(int[] map) {
