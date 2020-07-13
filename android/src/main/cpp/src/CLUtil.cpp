@@ -8,19 +8,25 @@ void checkCLError(cl_int errcode) {
     }
 }
 
-char* getPlatformInfo(cl_platform_id platformId, cl_platform_info info) {
+char *getPlatformInfoString(cl_platform_id platformId, cl_platform_info info) {
+    cl_int err = CL_SUCCESS;
     size_t len = 0;
-    clGetPlatformInfo(platformId, info, 0, NULL, &len);
-    char *str = (char *) alloca(sizeof(char) * len);
-    clGetPlatformInfo(platformId, info, len, &str, NULL);
+    err = clGetPlatformInfo(platformId, info, 0, NULL, &len);
+    checkCLError(err);
+    char *str = (char *) calloc(len, sizeof(char));
+    err = clGetPlatformInfo(platformId, info, len, str, NULL);
+    checkCLError(err);
     return str;
 }
 
-char* getDeviceInfo(cl_device_id deviceId, cl_platform_info info) {
+char *getDeviceInfoString(cl_device_id deviceId, cl_device_info info) {
+    cl_int err = CL_SUCCESS;
     size_t len = 0;
-    clGetDeviceInfo(deviceId, info, 0, NULL, &len);
-    char *str = (char *) alloca(sizeof(char) * len);
-    clGetDeviceInfo(deviceId, info, len, &str, NULL);
+    err = clGetDeviceInfo(deviceId, info, 0, NULL, &len);
+    checkCLError(err);
+    char *str = (char *) calloc(len, sizeof(char));
+    err = clGetDeviceInfo(deviceId, info, len, str, NULL);
+    checkCLError(err);
     return str;
 }
 }

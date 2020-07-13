@@ -11,6 +11,7 @@ import com.entermoor.cellular_automaton.component.UIImageButtons;
 import com.entermoor.cellular_automaton.component.UIMain;
 import com.entermoor.cellular_automaton.component.UpdaterChooser;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
+import com.entermoor.cellular_automaton.updater.OpenCLUpdater;
 
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -96,5 +97,14 @@ public class CellularAutomaton extends ApplicationAdapter {
         }
         renderNow = true;
         Gdx.app.debug("randomize", "randomized");
+    }
+
+    @Override
+    public void dispose() {
+        for (CellPoolUpdater updater : updaters) {
+            if (updater instanceof OpenCLUpdater) {
+                ((OpenCLUpdater) updater).releaseMemory();
+            }
+        }
     }
 }

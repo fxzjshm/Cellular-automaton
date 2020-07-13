@@ -11,6 +11,6 @@
 extern "C" {
 void checkCLError(cl_int errcode);
 
-char* getPlatformInfo(cl_platform_id platformId, cl_platform_info info);
-char* getDeviceInfo(cl_device_id deviceId, cl_platform_info info);
+char* getPlatformInfoString(cl_platform_id platformId, cl_platform_info info);
+char* getDeviceInfoString(cl_device_id deviceId, cl_platform_info info);
 }

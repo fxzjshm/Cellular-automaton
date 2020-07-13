@@ -43,13 +43,13 @@ char *jstringToChar(JNIEnv *env, jstring jstr) {
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_getPlatformName0(JNIEnv *env,
                                                                                      jobject thiz) {
-    return charTojstring(env, getPlatformInfo(platformId, CL_PLATFORM_NAME));
+    return charTojstring(env, getPlatformInfoString(platformId, CL_PLATFORM_NAME));
 }
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_getDeviceName0(JNIEnv *env,
                                                                                    jobject thiz) {
-    return charTojstring(env, getDeviceInfo(deviceId, CL_DEVICE_NAME));
+    return charTojstring(env, getDeviceInfoString(deviceId, CL_DEVICE_NAME));
 }
 
 extern "C" void
@@ -98,11 +98,13 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_createMemory0(JNIEnv *env,
                                                                                   jobject thiz,
                                                                                   jintArray old_map) {
-    size_t byteCount = env->GetArrayLength(old_map) * sizeof(jint);
-    oldMapMemory = clCreateBuffer(clContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, byteCount,
-                                  old_map, &ret);
-    checkCLError(ret);
+    jsize len = env->GetArrayLength(old_map);
+    size_t byteCount = len * sizeof(jint);
     oldMapCache = (jint *) (malloc(byteCount));
+    env->GetIntArrayRegion(old_map, 0, len, oldMapCache);
+    oldMapMemory = clCreateBuffer(clContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, byteCount,
+                                  oldMapCache, &ret);
+    checkCLError(ret);
     mapMemory = clCreateBuffer(clContext, CL_MEM_READ_WRITE, byteCount, NULL, &ret);
     checkCLError(ret);
     mapCache = (jint *) (malloc(byteCount));
@@ -157,9 +159,9 @@ Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_setKernelArg
                                                                                    jobject thiz,
                                                                                    jint width,
                                                                                    jint height) {
-    ret = clSetKernelArg(clKernel, 0, sizeof(cl_mem), oldMapMemory);
+    ret = clSetKernelArg(clKernel, 0, sizeof(cl_mem), &oldMapMemory);
     checkCLError(ret);
-    ret = clSetKernelArg(clKernel, 1, sizeof(cl_mem), mapMemory);
+    ret = clSetKernelArg(clKernel, 1, sizeof(cl_mem), &mapMemory);
     checkCLError(ret);
     ret = clSetKernelArg(clKernel, 2, sizeof(jint), &width);
     checkCLError(ret);
