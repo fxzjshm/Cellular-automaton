@@ -1,3 +1,9 @@
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+
 apply plugin: "java"
 
 sourceCompatibility = 1.6
@@ -9,3 +15,76 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 eclipse.project {
     name = appName + "-core"
 }
+
+boolean doCompileCLtoVK = false
+
+task compileCLtoVK() {
+    description("If there exists clspv in your PATH, compile *.cl into Vulkan's SPIR-V if necessary.")
+    doFirst {
+        println "checking clspv"
+        String[] cmd = ["clspv", "--version"];
+        Process proc = Runtime.getRuntime().exec(cmd)
+        int ret = proc.waitFor()
+        println proc.inputStream.text
+        if (ret != 0) {
+            println "Cannot find command clspv, skip compiling."
+            // outcome = TaskExecutionOutcome.SKIPPED;
+            return;
+        } else {
+            println "found command clspv"
+            doCompileCLtoVK = true
+        }
+    }
+
+    doLast {
+        if (!doCompileCLtoVK) return
+        boolean existsCLFile = false
+        final LinkedHashMap<File, File> files = new LinkedHashMap<>()
+        File assetsDir, currentDir = file(".");
+        if (currentDir.absolutePath.endsWith("core")) {
+            assetsDir = file(currentDir.parent + '/android/assets')
+        } else {
+            assetsDir = file(currentDir.absolutePath + '/android/assets')
+        }
+        Files.walkFileTree(assetsDir.toPath(), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                super.visitFile(path, attrs);
+                if (path.toString().toLowerCase().endsWith(".cl")) {
+                    existsCLFile = true
+                    File clFile = new File(path.toUri());
+                    File spvFile = new File(clFile.getParent() + "/" + clFile.getName() + ".spv");
+                    // println clFile
+                    // println spvFile
+                    if (!(spvFile.exists() && (spvFile.lastModified() > clFile.lastModified()))) {
+                        files.put(clFile, spvFile);
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        String[] cmd;
+        int ret = 0;
+        // println files
+        for (Map.Entry<File, File> entry : files.entrySet()) {
+            cmd = ['clspv', entry.key.absolutePath, '-o', entry.value.absolutePath]
+            println cmd
+            Process proc = Runtime.getRuntime().exec(cmd)
+            ret += proc.waitFor()
+            println proc.inputStream.text
+        }
+        if (!existsCLFile) {
+            // outcome = TaskExecutionOutcome.NO_SOURCE
+        } else if (files.size() > 0) {
+            if (ret > 0) {
+                // outcome = TaskExecutionOutcome.FAILED
+            } else {
+                // outcome = TaskExecutionOutcome.EXECUTED
+            }
+        } else {
+            // outcome = TaskExecutionOutcome.UP_TO_DATE
+        }
+    }
+}
+
+compileJava.dependsOn compileCLtoVK
