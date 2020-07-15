@@ -34,6 +34,7 @@ allprojects {
         ashleyVersion = '1.7.0'
         aiVersion = '1.8.0'
         // svg2pixmapVersion = '0.0.1-SNAPSHOT'
+        visuiVersion = '1.4.4'
     }
 
     repositories {
@@ -99,6 +100,7 @@ project(":html") {
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
         implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
         // compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion:sources"
+        implementation "com.kotcrab.vis:vis-ui:$visuiVersion:sources"
     }
 }
 project(":core") {
@@ -108,6 +110,7 @@ project(":core") {
     dependencies {
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
         // compile "io.github.fxzjshm.gdx.svg2pixmap:gdx-svg2pixmap-core:$svg2pixmapVersion"
+        implementation "com.kotcrab.vis:vis-ui:$visuiVersion"
     }
 }
 project(":ios-moe") {

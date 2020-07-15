@@ -29,6 +29,7 @@ task copyNatives {
             proguard = new File("proguard.append.cfg")
             proguard << "\n-keep class com.badlogic.** { *; }\n"
             proguard << "-keep enum com.badlogic.** { *; }\n"
+            proguard << "-keep class com.kotcrab.** { *; }\n"
         }
     }
 }

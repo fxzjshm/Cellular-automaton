@@ -4,5 +4,6 @@
 <module>
 	<source path="com/entermoor/cellular_automaton" />
 	<inherits name='io.github.fxzjshm.gdx.svg2pixmap' />
+	<inherits name='com.kotcrab.vis.vis-ui' />
 	<extend-configuration-property name="gdx.reflect.include" value="com.entermoor.cellular_automaton" />
 </module>
