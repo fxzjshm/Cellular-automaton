@@ -1,13 +1,6 @@
 #include "CLUtil.h"
 
 extern "C" {
-void checkCLError(cl_int errcode) {
-    if (errcode != CL_SUCCESS) {
-        LOGE("OpenCL error [%d]", errcode);
-        throw errcode;
-    }
-}
-
 char *getPlatformInfoString(cl_platform_id platformId, cl_platform_info info) {
     cl_int err = CL_SUCCESS;
     size_t len = 0;
