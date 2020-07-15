@@ -4,15 +4,10 @@ import com.entermoor.cellular_automaton.CellularAutomaton;
 
 // TODO always remember to sync code between SingleThreadUpdater, MultiThreadUpdater and OpenCLUpdater
 public abstract class CellPoolUpdater {
-    /**
-     * of the number of cells
-     */
-    int width, height;
+
     public double updateRate;
 
     public CellPoolUpdater(CellularAutomaton main) {
-        width = main.width;
-        height = main.height;
     }
 
     /**
@@ -27,8 +22,8 @@ public abstract class CellPoolUpdater {
 
     public void updateSingleCell(int width, int height, int[] oldMapBool, int[] newMapBool, int x, int y) {
         short neighbourCount = 0;
-        int xm1 = getRealX(x - 1), xp1 = getRealX(x + 1),
-                ym1 = getRealY(y - 1), yp1 = getRealY(y + 1),
+        int xm1 = getRealX(x - 1, width), xp1 = getRealX(x + 1, width),
+                ym1 = getRealY(y - 1, height), yp1 = getRealY(y + 1, height),
                 xm1Xh = xm1 * height, xXh = x * height, xp1Xh = xp1 * height,
                 gid = xXh + y;
         // TODO Skip formatter in settings
@@ -62,7 +57,7 @@ public abstract class CellPoolUpdater {
                     */
     }
 
-    public int getRealX(int x) {
+    public int getRealX(int x, int width) {
         /*
         if (x < 0) {
             x = x + width;
@@ -83,7 +78,7 @@ public abstract class CellPoolUpdater {
         return x;
     }
 
-    public int getRealY(int y) {
+    public int getRealY(int y, int height) {
         /*
         if (y < 0) {
             y = y + height;
