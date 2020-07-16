@@ -35,12 +35,19 @@ public class UIImageButtons extends ApplicationAdapter {
 
         pause.setSkin(skin);
         pause.setBounds(CellularAutomaton.pixmapLeftMargin, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        pause.addCaptureListener(new EventListener() {
+        pause.addListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
-                    main.isRunning = false;
-                    Gdx.app.debug("pause", "paused");
+                if (event instanceof InputEvent) {
+                    InputEvent e = (InputEvent) event;
+                    switch (e.getType()) {
+                        case touchUp:
+                            main.isRunning = false;
+                            Gdx.app.debug("pause", "paused");
+                            return false;
+                        case touchDown:
+                            return true;
+                    }
                 }
                 return false;
             }
@@ -51,12 +58,19 @@ public class UIImageButtons extends ApplicationAdapter {
 
         start.setSkin(skin);
         start.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth / 4, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        start.addCaptureListener(new EventListener() {
+        start.addListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
-                    main.isRunning = true;
-                    Gdx.app.debug("start", "resumed");
+                if (event instanceof InputEvent) {
+                    InputEvent e = (InputEvent) event;
+                    switch (e.getType()) {
+                        case touchUp:
+                            main.isRunning = true;
+                            Gdx.app.debug("start", "resumed");
+                            return false;
+                        case touchDown:
+                            return true;
+                    }
                 }
                 return false;
             }
@@ -68,11 +82,18 @@ public class UIImageButtons extends ApplicationAdapter {
 
         randomize.setSkin(skin);
         randomize.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth / 2, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        randomize.addCaptureListener(new EventListener() {
+        randomize.addListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
-                    main.random();
+                if (event instanceof InputEvent) {
+                    InputEvent e = (InputEvent) event;
+                    switch (e.getType()) {
+                        case touchUp:
+                            main.random();
+                            return false;
+                        case touchDown:
+                            return true;
+                    }
                 }
                 return false;
             }

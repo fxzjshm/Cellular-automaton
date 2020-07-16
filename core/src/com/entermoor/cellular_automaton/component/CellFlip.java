@@ -2,9 +2,14 @@ package com.entermoor.cellular_automaton.component;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.entermoor.cellular_automaton.CellularAutomaton;
 
+/**
+ * Flip the cell when you click on it
+ */
 public class CellFlip extends ApplicationAdapter {
 
     public CellularAutomaton main;
@@ -18,51 +23,26 @@ public class CellFlip extends ApplicationAdapter {
         final int width = main.width, height = main.height,
                 pixmapLeftMargin = CellularAutomaton.pixmapLeftMargin, pixmapDownMargin = CellularAutomaton.pixmapDownMargin;
         final float scale = main.scale;
-        main.input.addProcessor(new InputProcessor() {
+        main.ui.image.addListener(new EventListener() {
             @Override
-            public boolean keyDown(int keycode) {
-                return false;
-            }
-
-            @Override
-            public boolean keyUp(int keycode) {
-                return false;
-            }
-
-            @Override
-            public boolean keyTyped(char character) {
-                return false;
-            }
-
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                return false;
-            }
-
-            @Override
-            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-                int x = ((int) ((screenX - pixmapLeftMargin) / scale));
-                int y = ((int) ((screenY + pixmapDownMargin - Gdx.graphics.getHeight()) / scale + height));
-                Gdx.app.debug("touchUp", "x = " + x + ", y = " + y);
-                if (x >= 0 && x < width && y >= 0 && y < height) {
-                    main.mapBool[x * height + y] = 1 - main.mapBool[x * height + y];
-                    main.renderNow = true;
+            public boolean handle(Event event) {
+                if (event instanceof InputEvent) {
+                    InputEvent e = (InputEvent) event;
+                    switch (e.getType()) {
+                        case touchUp:
+                            float screenX = e.getStageX(), screenY = e.getStageY();
+                            int x = ((int) ((screenX - pixmapLeftMargin) / scale));
+                            int y = ((int) (-(screenY - pixmapDownMargin) / scale + height));
+                            Gdx.app.debug("touchUp", "x = " + x + ", y = " + y);
+                            if (x >= 0 && x < width && y >= 0 && y < height) {
+                                main.mapBool[x * height + y] = 1 - main.mapBool[x * height + y];
+                                main.renderNow = true;
+                            }
+                            return false;
+                        case touchDown:
+                            return true;
+                    }
                 }
-                return false;
-            }
-
-            @Override
-            public boolean touchDragged(int screenX, int screenY, int pointer) {
-                return false;
-            }
-
-            @Override
-            public boolean mouseMoved(int screenX, int screenY) {
-                return false;
-            }
-
-            @Override
-            public boolean scrolled(int amount) {
                 return false;
             }
         });

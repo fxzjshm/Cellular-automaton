@@ -15,6 +15,7 @@ public class UpdaterChooser extends ApplicationAdapter {
     // TODO UI for swiching updater
 
     public CellularAutomaton main;
+    public UpdateRateTester updateRateTester;
 
     public UpdaterChooser(CellularAutomaton main) {
         this.main = main;
@@ -27,8 +28,8 @@ public class UpdaterChooser extends ApplicationAdapter {
         MultiThreadUpdater multiThreadUpdater = new MultiThreadUpdater(main);
         main.updaters.add(multiThreadUpdater);
 
-        main.updateRateTester = new UpdateRateTester(main);
-        main.updateRateTester.testUpdateRate();
+        updateRateTester = new UpdateRateTester(main);
+        updateRateTester.testUpdateRate();
         Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(main.updaters.size() / 10 + 1);
         for (CellPoolUpdater updater : main.updaters) {
             if (updater.updateRate < 0) wrongUpdaters.add(updater);

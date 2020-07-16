@@ -12,7 +12,6 @@ import com.entermoor.cellular_automaton.component.UIMain;
 import com.entermoor.cellular_automaton.component.UpdaterChooser;
 import com.entermoor.cellular_automaton.updater.AsynchronousUpdater;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
-import com.entermoor.cellular_automaton.updater.OpenCLUpdater;
 import com.kotcrab.vis.ui.VisUI;
 
 import java.util.LinkedHashSet;
@@ -34,14 +33,13 @@ public class CellularAutomaton extends ApplicationAdapter {
 
     public boolean isRunning = true;
 
+    public CellFlip cellFlip;
     public UIMain ui;
     public UIImageButtons uiImageButtons;
+    public UpdaterChooser updaterChooser;
 
     public CellPoolUpdater updater;
     public Set<CellPoolUpdater> updaters = new LinkedHashSet<CellPoolUpdater>(2);
-    public UpdateRateTester updateRateTester;
-    public UpdaterChooser updaterChooser;
-
 
     public long lastRefreshTime = TimeUtils.millis();
     public boolean renderNow = false;
@@ -59,8 +57,16 @@ public class CellularAutomaton extends ApplicationAdapter {
         oldMapBool = new int[width * height];
 
         VisUI.load();
+
         ui = new UIMain(this);
+        cellFlip = new CellFlip(this);
+        uiImageButtons = new UIImageButtons(this);
+        updaterChooser = new UpdaterChooser(this);
+
         ui.create();
+        cellFlip.create();
+        uiImageButtons.create();
+        updaterChooser.create();
 
         random();
         /*for (int i = 0; i < 9; i++) {
@@ -70,14 +76,7 @@ public class CellularAutomaton extends ApplicationAdapter {
         if (null != Gdx.input.getInputProcessor())
             input.addProcessor(Gdx.input.getInputProcessor());
         Gdx.input.setInputProcessor(input);
-        input.addProcessor(ui.stage);
-        new CellFlip(this).create();
-
-        uiImageButtons = new UIImageButtons(this);
-        uiImageButtons.create();
-
-        updaterChooser = new UpdaterChooser(this);
-        updaterChooser.create();
+        input.addProcessor(0,ui.stage);
     }
 
     @Override
@@ -90,6 +89,9 @@ public class CellularAutomaton extends ApplicationAdapter {
             lastRefreshTime = TimeUtils.millis();
         }
         ui.render();
+        cellFlip.render();
+        uiImageButtons.render();
+        updaterChooser.render();
     }
 
     public void random() {
@@ -103,12 +105,42 @@ public class CellularAutomaton extends ApplicationAdapter {
     }
 
     @Override
+    public void resize(int width, int height) {
+        ui.resize(width, height);
+        cellFlip.resize(width, height);
+        uiImageButtons.resize(width, height);
+        updaterChooser.resize(width, height);
+    }
+
+    @Override
+    public void pause() {
+        ui.pause();
+        cellFlip.pause();
+        uiImageButtons.pause();
+        updaterChooser.pause();
+        isRunning = false;
+    }
+
+    @Override
+    public void resume() {
+        ui.resume();
+        cellFlip.resume();
+        uiImageButtons.resume();
+        updaterChooser.resume();
+        isRunning = true;
+    }
+
+    @Override
     public void dispose() {
         for (CellPoolUpdater updater : updaters) {
             if (updater instanceof AsynchronousUpdater) {
                 ((AsynchronousUpdater) updater).destroy();
             }
         }
+        ui.dispose();
+        cellFlip.dispose();
+        uiImageButtons.dispose();
+        updaterChooser.dispose();
         VisUI.dispose();
     }
 }
