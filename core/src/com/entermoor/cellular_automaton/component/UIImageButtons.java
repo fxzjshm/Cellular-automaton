@@ -38,7 +38,7 @@ public class UIImageButtons extends ApplicationAdapter {
         pause.addCaptureListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
                     main.isRunning = false;
                     Gdx.app.debug("pause", "paused");
                 }
@@ -54,7 +54,7 @@ public class UIImageButtons extends ApplicationAdapter {
         start.addCaptureListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
                     main.isRunning = true;
                     Gdx.app.debug("start", "resumed");
                 }
@@ -71,7 +71,7 @@ public class UIImageButtons extends ApplicationAdapter {
         randomize.addCaptureListener(new EventListener() {
             @Override
             public boolean handle(Event event) {
-                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchDown)) {
+                if (event instanceof InputEvent && ((InputEvent) event).getType().equals(InputEvent.Type.touchUp)) {
                     main.random();
                 }
                 return false;
