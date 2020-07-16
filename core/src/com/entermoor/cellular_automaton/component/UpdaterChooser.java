@@ -29,7 +29,7 @@ public class UpdaterChooser extends ApplicationAdapter {
 
         main.updateRateTester = new UpdateRateTester(main);
         main.updateRateTester.testUpdateRate();
-        Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(main.updaters.size() / 10);
+        Set<CellPoolUpdater> wrongUpdaters = new LinkedHashSet<CellPoolUpdater>(main.updaters.size() / 10 + 1);
         for (CellPoolUpdater updater : main.updaters) {
             if (updater.updateRate < 0) wrongUpdaters.add(updater);
         }
