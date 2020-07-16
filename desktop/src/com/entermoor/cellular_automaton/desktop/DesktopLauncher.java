@@ -3,7 +3,7 @@ package com.entermoor.cellular_automaton.desktop;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.entermoor.cellular_automaton.CellularAutomaton;
-import com.entermoor.cellular_automaton.desktop.opencl.OpenCLUpdaterGenerator;
+import com.entermoor.cellular_automaton.desktop.opencl.DesktopOpenCLUpdaterGenerator;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
 import com.entermoor.cellular_automaton.updater.DesktopOpenCLUpdater;
 
@@ -12,7 +12,7 @@ public class DesktopLauncher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         CellularAutomaton main = new CellularAutomaton();
         CellularAutomaton.asyncExecutor.submit(() -> {
-            main.updaters.addAll(OpenCLUpdaterGenerator.generateOpenCLUpdater(main));
+            main.updaters.addAll(DesktopOpenCLUpdaterGenerator.generateOpenCLUpdater(main));
 
             for (CellPoolUpdater updater : main.updaters) {
                 if (updater instanceof DesktopOpenCLUpdater) {

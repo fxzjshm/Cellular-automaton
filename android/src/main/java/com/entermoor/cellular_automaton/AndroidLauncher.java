@@ -22,7 +22,7 @@ public class AndroidLauncher extends AndroidApplication {
                 public Object call() {
                     try {
                         CLUpdater.init();
-                        main.updater=CLUpdater;
+                        main.updater = CLUpdater;
                     } catch (Exception e) {
                         synchronized (System.err) {
                             System.err.println("[AndroidLauncher] Cannot init device " + CLUpdater.deviceName

@@ -22,8 +22,8 @@ public class UpdaterChooser extends ApplicationAdapter {
 
     @Override
     public void create() {
-        SingleThreadUpdater defaultUpdater = new SingleThreadUpdater(main);
-        main.updaters.add(defaultUpdater);
+        SingleThreadUpdater singleThreadUpdater = new SingleThreadUpdater(main);
+        main.updaters.add(singleThreadUpdater);
         MultiThreadUpdater multiThreadUpdater = new MultiThreadUpdater(main);
         main.updaters.add(multiThreadUpdater);
 
@@ -39,7 +39,7 @@ public class UpdaterChooser extends ApplicationAdapter {
 
         if (null == main.updater || !(main.updaters.contains(main.updater))) {
             if (main.updaters.contains(multiThreadUpdater)) main.updater = multiThreadUpdater;
-            else main.updater = defaultUpdater;
+            else main.updater = singleThreadUpdater;
         }
         Gdx.app.debug("UpdaterChooser", "Chosen " + main.updater.getName());
     }

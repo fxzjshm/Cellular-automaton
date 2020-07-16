@@ -20,7 +20,7 @@ import static org.lwjgl.opencl.CL10.clGetDeviceIDs;
 import static org.lwjgl.opencl.CL10.clGetPlatformIDs;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class OpenCLUpdaterGenerator {
+public class DesktopOpenCLUpdaterGenerator {
 
     public static Set<DesktopOpenCLUpdater> generateOpenCLUpdater(CellularAutomaton main) {
         Set<DesktopOpenCLUpdater> updaters;

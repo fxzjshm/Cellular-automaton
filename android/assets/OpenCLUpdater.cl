@@ -11,7 +11,6 @@ __kernel void update(__global const int *oldMapBool, __global int *newMapBool,
         ym1 = getRealY(y - 1, h), yp1 = getRealY(y + 1, h),
         xm1Xh = xm1 * h, xXh = x * h, xp1Xh = xp1 * h;
 
-    // TODO branch()
     // @off
     // @formatter:off
     neighbourCount += oldMapBool[xm1Xh + ym1];

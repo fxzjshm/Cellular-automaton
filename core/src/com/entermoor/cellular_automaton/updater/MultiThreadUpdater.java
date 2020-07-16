@@ -7,7 +7,6 @@ import com.entermoor.cellular_automaton.CellularAutomaton;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// TODO slower than SingleThreadUpdater
 public class MultiThreadUpdater extends CellPoolUpdater {
 
     public int nThread;
