@@ -13,6 +13,7 @@ public abstract class OpenCLUpdater extends AsynchronousUpdater {
         super(main);
     }
 
+    @Override
     public void init() {
         // since we have had platform id and device id, we don't need to detect them.
         createContext();
@@ -23,6 +24,11 @@ public abstract class OpenCLUpdater extends AsynchronousUpdater {
         // haven't known the size yet
         // createMemory();
         preparing = false;
+    }
+
+    @Override
+    public void destroy() {
+        releaseMemory();
     }
 
     public abstract void createContext();

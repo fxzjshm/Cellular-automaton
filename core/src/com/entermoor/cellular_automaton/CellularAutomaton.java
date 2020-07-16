@@ -10,8 +10,10 @@ import com.entermoor.cellular_automaton.component.CellFlip;
 import com.entermoor.cellular_automaton.component.UIImageButtons;
 import com.entermoor.cellular_automaton.component.UIMain;
 import com.entermoor.cellular_automaton.component.UpdaterChooser;
+import com.entermoor.cellular_automaton.updater.AsynchronousUpdater;
 import com.entermoor.cellular_automaton.updater.CellPoolUpdater;
 import com.entermoor.cellular_automaton.updater.OpenCLUpdater;
+import com.kotcrab.vis.ui.VisUI;
 
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -56,6 +58,7 @@ public class CellularAutomaton extends ApplicationAdapter {
         mapBool = new int[width * height];
         oldMapBool = new int[width * height];
 
+        VisUI.load();
         ui = new UIMain(this);
         ui.create();
 
@@ -102,9 +105,10 @@ public class CellularAutomaton extends ApplicationAdapter {
     @Override
     public void dispose() {
         for (CellPoolUpdater updater : updaters) {
-            if (updater instanceof OpenCLUpdater) {
-                ((OpenCLUpdater) updater).releaseMemory();
+            if (updater instanceof AsynchronousUpdater) {
+                ((AsynchronousUpdater) updater).destroy();
             }
         }
+        VisUI.dispose();
     }
 }

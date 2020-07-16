@@ -19,6 +19,8 @@ public abstract class AsynchronousUpdater extends CellPoolUpdater {
      */
     public abstract void init();
 
+    public abstract void destroy();
+
     public AsynchronousUpdater(CellularAutomaton main) {
         super(main);
     }
