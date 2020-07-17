@@ -1,14 +1,16 @@
 package com.entermoor.cellular_automaton.updater;
 
-import com.entermoor.cellular_automaton.CellularAutomaton;
+import java.util.Locale;
 
 // TODO always remember to sync code between SingleThreadUpdater, MultiThreadUpdater and OpenCLUpdater
 public abstract class CellPoolUpdater {
 
-    public double updateRate;
-
-    public CellPoolUpdater(CellularAutomaton main) {
-    }
+    /**
+     * Update rate, in frame per second
+     * NaN -> haven't tested, -1 -> problematic
+     */
+    private double updateRate = Double.NaN;
+    public String entryMessage = "not initialized";
 
     /**
      * Update newMap in accordance with oldMap
@@ -101,6 +103,31 @@ public abstract class CellPoolUpdater {
 
     public abstract String getName();
 
+    public double getUpdateRate() {
+        return updateRate;
+    }
+
+    public void setUpdateRate(double updateRate) {
+        this.updateRate = updateRate;
+        updateEntryMessage();
+    }
+
+    public void updateEntryMessage() {
+        String extraMessage;
+        if (Double.isNaN(updateRate)) {
+            extraMessage = "testing...";
+        } else if (updateRate < 0) {
+            extraMessage = "problematic";
+        } else {
+            extraMessage = String.format(Locale.getDefault(), "FPS: %.2f", updateRate);
+        }
+        entryMessage = String.format(Locale.getDefault(), "%s (%s)", getName(), extraMessage);
+    }
+
+    @Override
+    public String toString() {
+        return entryMessage;
+    }
 
     /*public static boolean isLive(int neighbourCount, boolean isAlive) {
         if (3 == neighbourCount) return true;

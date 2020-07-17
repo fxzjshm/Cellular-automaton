@@ -16,7 +16,7 @@ import io.github.fxzjshm.gdx.svg2pixmap.Svg2Pixmap;
 
 public class UIImageButtons extends ApplicationAdapter {
     public CellularAutomaton main;
-    public ImageButton start, pause, restart, randomize, help;
+    public ImageButton start, pause, restart, randomize, help, chooseUpdater;
 
     public UIImageButtons(CellularAutomaton main) {
         this.main = main;
@@ -99,5 +99,28 @@ public class UIImageButtons extends ApplicationAdapter {
             }
         });
         stage.addActor(randomize);
+
+        chooseUpdater = new ImageButton(new TextureRegionDrawable(new Texture(Svg2Pixmap.svg2Pixmap(Gdx.files.internal("options.svg").readString()))));
+
+        chooseUpdater.setSkin(skin);
+        chooseUpdater.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth * 3 / 4, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
+        chooseUpdater.addListener(new EventListener() {
+            @Override
+            public boolean handle(Event event) {
+                if (event instanceof InputEvent) {
+                    InputEvent e = (InputEvent) event;
+                    switch (e.getType()) {
+                        case touchUp:
+                            main.updaterChooser.showChoosingDialog();
+                            Gdx.app.debug("chooseUpdater", "choosing");
+                            return false;
+                        case touchDown:
+                            return true;
+                    }
+                }
+                return false;
+            }
+        });
+        stage.addActor(chooseUpdater);
     }
 }

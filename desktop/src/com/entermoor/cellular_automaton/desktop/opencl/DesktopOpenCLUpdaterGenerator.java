@@ -22,7 +22,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class DesktopOpenCLUpdaterGenerator {
 
-    public static Set<DesktopOpenCLUpdater> generateOpenCLUpdater(CellularAutomaton main) {
+    public static Set<DesktopOpenCLUpdater> generateOpenCLUpdater() {
         Set<DesktopOpenCLUpdater> updaters;
         try (MemoryStack stack = stackPush()) {
             IntBuffer pi = stack.mallocInt(1);
@@ -57,7 +57,7 @@ public class DesktopOpenCLUpdaterGenerator {
                     for (int d = 0; d < devices.capacity(); d++) {
                         long device = devices.get(d);
 
-                        DesktopOpenCLUpdater updater = new DesktopOpenCLUpdater(main, platform, device);
+                        DesktopOpenCLUpdater updater = new DesktopOpenCLUpdater(platform, device);
                         updaters.add(updater);
                         // CLCapabilities caps = CL.createDeviceCapabilities(device, platformCaps);
                         CellularAutomaton.asyncExecutor.submit(() -> {

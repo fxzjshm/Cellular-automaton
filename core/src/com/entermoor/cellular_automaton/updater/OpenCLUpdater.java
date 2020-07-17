@@ -9,10 +9,6 @@ public abstract class OpenCLUpdater extends AsynchronousUpdater {
 
     public static String programSource = "";
 
-    public OpenCLUpdater(CellularAutomaton main) {
-        super(main);
-    }
-
     @Override
     public void init() {
         // since we have had platform id and device id, we don't need to detect them.

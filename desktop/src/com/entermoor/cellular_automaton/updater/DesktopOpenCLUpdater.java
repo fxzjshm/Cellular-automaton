@@ -46,8 +46,7 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
     public long oldMapMemory = -1, mapMemory = -1;
     public IntBuffer intBuffer;
 
-    public DesktopOpenCLUpdater(CellularAutomaton main, long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
-        super(main);
+    public DesktopOpenCLUpdater(long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
         clPlatform = platform;
         clDevice = device;
         platformName = getPlatformInfoStringUTF8(platform, CL_PLATFORM_NAME);

@@ -12,8 +12,7 @@ public class MultiThreadUpdater extends CellPoolUpdater {
     public int nThread;
     public String name;
 
-    public MultiThreadUpdater(CellularAutomaton main) {
-        super(main);
+    public MultiThreadUpdater() {
         nThread = Runtime.getRuntime().availableProcessors();
         name = String.format(Locale.getDefault(), "MultiThreadUpdater(%d thread(s))", nThread);
     }

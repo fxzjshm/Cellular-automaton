@@ -1,12 +1,6 @@
 package com.entermoor.cellular_automaton.updater;
 
-import com.entermoor.cellular_automaton.CellularAutomaton;
-
 public class SingleThreadUpdater extends CellPoolUpdater {
-
-    public SingleThreadUpdater(CellularAutomaton main) {
-        super(main);
-    }
 
     @Override
     public void updateCellPool(int width, int height, int[] oldMapBool, int[] newMapBool) {

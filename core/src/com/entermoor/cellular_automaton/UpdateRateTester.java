@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class UpdateRateTester {
     CellularAutomaton main;
-    int w = 1920, h = 1080, n = 5, seed = 20200411, correctHash = -1017684658;
+    int w = 1920, h = 1080, n = 10, seed = 20200411, correctHash = 1546722308;
     int[] oldMapBool = new int[w * h], mapBool = oldMapBool.clone();
     PerformanceCounter pc = new PerformanceCounter("UpdateRatePerformanceCounter", n);
 
@@ -20,7 +20,14 @@ public class UpdateRateTester {
 
     public void testUpdateRate() {
         for (CellPoolUpdater updater : main.updaters) {
-            updater.updateRate = testUpdateRate(updater);
+            try {
+                updater.setUpdateRate(testUpdateRate(updater));
+            } catch (Throwable t) {
+                if (Gdx.app != null) {
+                    Gdx.app.error("UpdateRateTester", "", t);
+                }
+            }
+
         }
     }
 
@@ -51,7 +58,7 @@ public class UpdateRateTester {
             pc.stop();
             pc.tick();
         }
-        double result = pc.time.average * 1000f;
+        double result = 1.0 / pc.time.average;
 
         r.setSeed(seed);
         int hash = 0;
@@ -61,7 +68,7 @@ public class UpdateRateTester {
             }
         }
 
-        Gdx.app.debug("testUpdateRate", String.format(Locale.getDefault(), "%s:%.3fms, result hash %d", updater.getName(), result, hash));
+        Gdx.app.debug("testUpdateRate", String.format(Locale.getDefault(), "%s: FPS: %.3f, result hash %d", updater.getName(), result, hash));
 
         if (hash != correctHash) {
             Gdx.app.debug("testUpdateRate", "Something went wrong when testing " + ClassReflection.getSimpleName(updater.getClass()));
