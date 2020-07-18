@@ -6,9 +6,15 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.async.AsyncTask;
 import com.entermoor.cellular_automaton.android.opencl.AndroidOpenCLLoader;
+import com.entermoor.cellular_automaton.android.vulkan.AndroidVulkanLoader;
 import com.entermoor.cellular_automaton.updater.AndroidOpenCLUpdater;
 
 public class AndroidLauncher extends AndroidApplication {
+
+    static {
+        System.loadLibrary("cellular-automaton-android-jni");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +40,9 @@ public class AndroidLauncher extends AndroidApplication {
                     return null;
                 }
             });
+        }
+        if (AndroidVulkanLoader.loadVulkanLibrary() == 0) {
+
         }
         initialize(main, config);
     }
