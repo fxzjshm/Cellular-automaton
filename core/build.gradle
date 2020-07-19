@@ -23,11 +23,17 @@ task compileCLtoVK() {
     doFirst {
         println "checking clspv"
         String[] cmd = ["clspv", "--version"];
-        Process proc = Runtime.getRuntime().exec(cmd)
+        Process proc;
+        try {
+            proc = Runtime.getRuntime().exec(cmd)
+        } catch (Throwable ignored) {
+            println "Cannot find command clspv, skip compiling."
+            return;
+        }
         int ret = proc.waitFor()
         println proc.inputStream.text
         if (ret != 0) {
-            println "Cannot find command clspv, skip compiling."
+            println "\"clspv --version\" returned with non-zero exit value ${ret}"
             // outcome = TaskExecutionOutcome.SKIPPED;
             return;
         } else {
