@@ -1,7 +1,5 @@
 package com.entermoor.cellular_automaton.updater;
 
-import com.entermoor.cellular_automaton.CellularAutomaton;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opencl.CL10;
@@ -46,6 +44,8 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
     public long oldMapMemory = -1, mapMemory = -1;
     public IntBuffer intBuffer;
 
+    public int[] lastNewMap;
+
     public DesktopOpenCLUpdater(long platform, long device/*,CLCapabilities platformCaps,CLCapabilities deviceCaps*/) {
         clPlatform = platform;
         clDevice = device;
@@ -59,13 +59,17 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
         while (preparing) {
             Thread.yield();
         }
-        // TODO implement updater
         int ret;
         if (width != w || height != h) {
             releaseMemory();
             w = width;
             h = height;
             createMemory(oldMap);
+        } else if (lastNewMap == oldMap) {
+            // continuous updating, swap the memory address
+            long tmp = oldMapMemory;
+            oldMapMemory = mapMemory;
+            mapMemory = tmp;
         } else {
             // don't need to re-create the buffer, just transfer the data
             // (as if I'm using dGPU.
@@ -170,4 +174,44 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
         buff.rewind();
         return buff;
     }
+
+    /*
+    public static void main(String[] args) {
+        // Testing some common swap methods
+        long a = 0x126232, b = 0x132535, t;
+        int n = 10000;
+
+        long tmp;
+        t = TimeUtils.nanoTime();
+        for (int i = 1; i <= n; i++) {
+            tmp = a;
+            a = b;
+            b = tmp;
+        }
+        System.out.println(TimeUtils.nanoTime() - t);
+
+        t = TimeUtils.nanoTime();
+        for (int i = 1; i <= n; i++) {
+            a = a + b;
+            b = a - b;
+            a = a - b;
+        }
+        System.out.println(TimeUtils.nanoTime() - t);
+
+        t = TimeUtils.nanoTime();
+        for (int i = 1; i <= n; i++) {
+            a = a ^ b;
+            b = a ^ b;
+            a = a ^ b;
+        }
+        System.out.println(TimeUtils.nanoTime() - t);
+
+        t = TimeUtils.nanoTime();
+        for (int i = 1; i <= n; i++) {
+            a = b + (b = a) * 0;
+        }
+        System.out.println(TimeUtils.nanoTime() - t);
+    }
+    */
+
 }
