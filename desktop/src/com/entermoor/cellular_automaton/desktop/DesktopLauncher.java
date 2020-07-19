@@ -12,7 +12,7 @@ public class DesktopLauncher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         CellularAutomaton main = new CellularAutomaton();
         CellularAutomaton.asyncExecutor.submit(() -> {
-            main.updaters.addAll(DesktopOpenCLUpdaterGenerator.generateOpenCLUpdater(main));
+            main.updaters.addAll(DesktopOpenCLUpdaterGenerator.generateOpenCLUpdater());
 
             for (CellPoolUpdater updater : main.updaters) {
                 if (updater instanceof DesktopOpenCLUpdater) {
