@@ -11,17 +11,14 @@ import com.entermoor.cellular_automaton.updater.AndroidOpenCLUpdater;
 
 public class AndroidLauncher extends AndroidApplication {
 
-    static {
-        System.loadLibrary("cellular-automaton-android-jni");
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         final CellularAutomaton main = new CellularAutomaton();
+        System.loadLibrary("cellular-automaton-android-jni");
         if (AndroidOpenCLLoader.loadOpenCLLibrary() == 0) {
-            final AndroidOpenCLUpdater CLUpdater = new AndroidOpenCLUpdater(main);
+            final AndroidOpenCLUpdater CLUpdater = new AndroidOpenCLUpdater();
             main.updaters.add(CLUpdater);
             CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
                 @Override
@@ -42,7 +39,24 @@ public class AndroidLauncher extends AndroidApplication {
             });
         }
         if (AndroidVulkanLoader.loadVulkanLibrary() == 0) {
-
+            final AndroidVulkanUpdater VKUpdater = new AndroidVulkanUpdater();
+            main.updaters.add(VKUpdater);
+            CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
+                @Override
+                public Object call() {
+                    try {
+                        VKUpdater.init();
+                    } catch (Exception e) {
+                        synchronized (System.err) {
+                            System.err.println("[AndroidLauncher] Cannot init device " + VKUpdater.deviceName
+                                    + " on platform " + VKUpdater.platformName);
+                            e.printStackTrace(System.err);
+                            main.updaters.remove(VKUpdater);
+                        }
+                    }
+                    return null;
+                }
+            });
         }
         initialize(main, config);
     }

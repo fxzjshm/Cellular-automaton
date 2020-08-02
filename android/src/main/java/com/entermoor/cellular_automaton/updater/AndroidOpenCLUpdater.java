@@ -1,13 +1,11 @@
 package com.entermoor.cellular_automaton.updater;
 
-import com.entermoor.cellular_automaton.CellularAutomaton;
-
 import java.util.Locale;
 
 // TODO implement this
 public class AndroidOpenCLUpdater extends OpenCLUpdater {
-    public AndroidOpenCLUpdater(CellularAutomaton main) {
-        super(main);
+    public AndroidOpenCLUpdater() {
+        super();
         updaterName = null;
     }
 
