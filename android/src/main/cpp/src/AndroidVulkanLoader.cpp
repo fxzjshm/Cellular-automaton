@@ -4,6 +4,7 @@
 
 VkInstance instance;
 std::vector<const char *> enabledExtensions;
+VkPhysicalDevice physicalDevice;
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVulkanLibrary0(
@@ -72,9 +73,23 @@ Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVu
         Having created the instance, we can actually start using vulkan.
         */
         VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, &instance));
+
+        /*
+        So, first we will list all physical devices on the system with vkEnumeratePhysicalDevices .
+        */
+        uint32_t deviceCount;
+        vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
+        if (deviceCount == 0) {
+            throw std::runtime_error("could not find a device with vulkan support");
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        physicalDevice = devices[0];
+
     } catch (...) {
         return -1;
     }
-
+    return 0;
 
 }

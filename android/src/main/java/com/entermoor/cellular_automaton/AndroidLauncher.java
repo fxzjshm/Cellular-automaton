@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.async.AsyncTask;
 import com.entermoor.cellular_automaton.android.opencl.AndroidOpenCLLoader;
 import com.entermoor.cellular_automaton.android.vulkan.AndroidVulkanLoader;
 import com.entermoor.cellular_automaton.updater.AndroidOpenCLUpdater;
+import com.entermoor.cellular_automaton.updater.AndroidVulkanUpdater;
 
 public class AndroidLauncher extends AndroidApplication {
 

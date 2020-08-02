@@ -1,5 +1,6 @@
 #include <vulkan_wrapper.h>
 #include <jni.h>
+#include <stdexcept>
 #include <vector>
 #include "android_log_print.h"
 
@@ -9,8 +10,8 @@
     VkResult res = (f);                                                                \
     if (res != VK_SUCCESS)                                                             \
     {                                                                                  \
-        LOGE("Fatal : VkResult is %d in %s at line %d\n", res,  __FILE__, __LINE__); \
-        throw res;                                                  \
+        LOGE("Fatal : VkResult is %d in %s at line %d\n", res,  __FILE__, __LINE__);   \
+        throw new std::runtime_error("" + res);                                        \
     }                                                                                  \
 }
 
