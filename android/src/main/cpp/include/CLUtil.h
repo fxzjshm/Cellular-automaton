@@ -1,9 +1,11 @@
 #pragma once
 
 #include "libopencl.h"
-#include <stdexcept>
 #include "android_log_print.h"
-#include <assert.h>
+#include <stdexcept>
+#include <sstream>
+#include <string>
+#include <iostream>
 
 #ifndef LOG_TAG
 #define LOG_TAG "CLUtil"
@@ -12,8 +14,11 @@
 #define checkCLError(errcode) \
 { \
     if (errcode != CL_SUCCESS) { \
-        LOGE("OpenCL error [%d] in %s at line %d\n", errcode, __FILE__, __LINE__); \
-        assert(errcode == CL_SUCCESS); \
+        std::ostringstream oss; \
+        oss << "OpenCL error [" << errcode << "] in " << __FILE__ << " at line " << __LINE__  << std::endl; \
+        std::string s = oss.str(); \
+        LOGE(s.c_str(), nullptr); \
+        throw new std::runtime_error(s); \
     } \
 }
 

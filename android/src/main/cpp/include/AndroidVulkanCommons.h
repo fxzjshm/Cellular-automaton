@@ -2,6 +2,9 @@
 #include <jni.h>
 #include <stdexcept>
 #include <vector>
+#include <sstream>
+#include <string>
+#include <iostream>
 #include "android_log_print.h"
 
 // Used for validating return values of Vulkan API calls.
@@ -10,8 +13,11 @@
     VkResult res = (f);                                                                \
     if (res != VK_SUCCESS)                                                             \
     {                                                                                  \
-        LOGE("Fatal : VkResult is %d in %s at line %d\n", res,  __FILE__, __LINE__);   \
-        throw new std::runtime_error("" + res);                                        \
+        std::ostringstream oss;                                                        \
+        oss << "Fatal : VkResult is " << res << " in " << __FILE__ << " at line " << __LINE__ << std::endl ; \
+        std::string s = oss.str();                                                     \
+        LOGE(s.c_str(), nullptr);                                                      \
+        throw new std::runtime_error(s);                                               \
     }                                                                                  \
 }
 
