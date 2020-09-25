@@ -54,24 +54,39 @@ static int access_file(const char *filename)
 }
 
 void* __dlopen(const char* __filename, int __flag){
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
+#ifdef USE_NDK_DLOPEN
   return ndk_dlopen(__filename,__flag);
+#endif
+#ifdef USE_BY_DLOPEN
+  return by_dlopen(__filename,__flag);
+#endif
 #else
-  return dlopen(__filename,__flag);
+  return dlopen(__filename, __flag);
 #endif
 }
 
-void* __dlsym(void* __handle, const char* __symbol){
-#if defined(__ANDROID__)
+void* __dlsym(void* __handle, const char* __symbol) {
+#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
+#ifdef USE_NDK_DLOPEN
   return ndk_dlsym(__handle, __symbol);
+#endif
+#ifdef USE_BY_DLOPEN
+  return by_dlsym(__handle, __symbol);
+#endif
 #else
   return dlsym(__handle, __symbol);
 #endif
 }
 
-int __dlclose(void* __handle){
-#if defined(__ANDROID__)
+int __dlclose(void* __handle) {
+#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
+#ifdef USE_NDK_DLOPEN
   return ndk_dlclose(__handle);
+#endif
+#ifdef USE_BY_DLOPEN
+  return by_dlclose(__handle);
+#endif
 #else
   return dlclose(__handle);
 #endif

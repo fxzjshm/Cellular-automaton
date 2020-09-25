@@ -1,13 +1,48 @@
 #ifndef LIBOPENCL_STUB_H
 #define LIBOPENCL_STUB_H
 
+// added some macros:
+// USE_DLOPEN dlopen() directly
+// USE_NDK_DLOPEN Rprop/ndk_dlopen
+// USE_BY_DLOPEN hack0z/byOpen
+#define USE_DLOPEN
+
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#if defined(__ANDROID__)
-#include "dlopen.h"
+#if (!defined(USE_NDK_DLOPEN)) && (!defined(USE_BY_DLOPEN))
+#define USE_DLOPEN
+#endif
+
+// @off
+// @formatter:off
+#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
+    #if defined(USE_NDK_DLOPEN)
+        #include "dlopen.h"
+    #elif defined(USE_BY_DLOPEN)
+        #include "byopen.h"
+        #define RTLD_LAZY BY_RTLD_LAZY
+    #else
+        #error "Must pick an implemention of dlopen()!"
+    #endif
 #else
 #include <dlfcn.h>
+#endif
+// @on
+// @formatter:on
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void *__dlopen(const char *__filename, int __flag);
+
+void *__dlsym(void *__handle, const char *__symbol);
+
+int __dlclose(void *__handle);
+
+#ifdef __cplusplus
+}
 #endif
 
 #include <CL/cl.h>
@@ -16,9 +51,9 @@
 
 typedef void (*f_pfn_notify)(const char *, const void *, size_t, void *);
 
-typedef cl_int (*f_clGetPlatformIDs) (cl_uint, cl_platform_id *, cl_uint *);
+typedef cl_int (*f_clGetPlatformIDs)(cl_uint, cl_platform_id *, cl_uint *);
 
-typedef cl_int (*f_clGetPlatformInfo) (cl_platform_id, cl_platform_info, size_t, void *, size_t *);
+typedef cl_int (*f_clGetPlatformInfo)(cl_platform_id, cl_platform_info, size_t, void *, size_t *);
 
 typedef cl_int (*f_clGetDeviceIDs) (cl_platform_id, cl_device_type, cl_uint, cl_device_id *, cl_uint *);
 
