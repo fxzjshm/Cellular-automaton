@@ -10,7 +10,11 @@ JNIEXPORT jint JNICALL
 Java_com_entermoor_cellular_1automaton_android_opencl_AndroidOpenCLLoader_loadOpenCLLibrary0(
         JNIEnv *env, jclass jclazz) {
     try {
+        char *soPath = getenv("LIBOPENCL_SO_PATH");
+        LOGI("LIBOPENCL_SO_PATH = %s", soPath);
+#ifdef USE_NDK_DLOPEN
         ndk_init(env);
+#endif // USE_NDK_DLOPEN
         cl_int ret = 0;
 
         cl_uint platformCount = 0;
