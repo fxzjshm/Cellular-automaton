@@ -149,5 +149,5 @@ Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_readMap0(JNI
     ret = clEnqueueReadBuffer(clCommandQueue, mapMemory, CL_TRUE, 0,
                               env->GetArrayLength(new_map) * sizeof(jint), mapCache, 0, NULL, NULL);
     checkCLError(ret);
-    env->SetIntArrayRegion(new_map,0,len,mapCache);
+    env->SetIntArrayRegion(new_map, 0, len, mapCache);
 }

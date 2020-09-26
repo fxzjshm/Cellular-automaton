@@ -94,32 +94,34 @@ public class AndroidLauncher extends AndroidApplication {
         String destFilePath = filesDirPath + "/" + destFileName;
         File destFile = new File(destFilePath);
         if (!destFile.exists()) {
-            try {
-                for (String default_so_path : default_so_paths) {
-                    File soFile = new File(default_so_path);
-                    if (!soFile.exists()) continue;
-                    try {
-                        copyAndLoadLibrary(default_so_path);
-                    } catch (UnsatisfiedLinkError | IOException | InterruptedException e) {
-                        Log.d("prepareOpenCLLibrary", e.getMessage());
-                        // failed
-                        File copiedLibrary = new File(filesDirPath + "/" + soFile.getName());
-                        if (copiedLibrary.exists()) copiedLibrary.delete();
-                        continue;
-                    }
-                    String copiedLibraryPath = filesDirPath + "/" + soFile.getName();
-                    load(copiedLibraryPath);
-                    // success
-                    Log.i("prepareOpenCLLibrary", "load " + copiedLibraryPath + "succeeded");
-                    File copiedLibraryFile = new File(copiedLibraryPath);
-                    Runtime.getRuntime().exec(new String[]{"mv", copiedLibraryPath, destFilePath}).waitFor();
-                    Log.i("prepareOpenCLLibrary", "moved " + copiedLibraryPath + "to" + destFilePath);
-                    load(destFilePath);
-                    break;
+            for (String default_so_path : default_so_paths) {
+                File soFile = new File(default_so_path);
+                if (!soFile.exists()) continue;
+                try {
+                    copyAndLoadLibrary(default_so_path);
+                } catch (UnsatisfiedLinkError | IOException | InterruptedException e) {
+                    Log.d("prepareOpenCLLibrary", e.getMessage());
+                    // failed
+                    File copiedLibrary = new File(filesDirPath + "/" + soFile.getName());
+                    if (copiedLibrary.exists()) copiedLibrary.delete();
+                    continue;
                 }
-            } catch (IOException | RuntimeException | UnsatisfiedLinkError | InterruptedException e) {
-                e.printStackTrace();
+                String copiedLibraryPath = filesDirPath + "/" + soFile.getName();
+                load(copiedLibraryPath);
+                // success
+                Log.i("prepareOpenCLLibrary", "load " + copiedLibraryPath + "succeeded");
+                File copiedLibraryFile = new File(copiedLibraryPath);
+                try {
+                    Runtime.getRuntime().exec(new String[]{"mv", copiedLibraryPath, destFilePath}).waitFor();
+                } catch (InterruptedException | IOException e) {
+                    Log.i("prepareOpenCLLibrary", "failed to move " + copiedLibraryPath + "to" + destFilePath);
+                    continue;
+                }
+                Log.i("prepareOpenCLLibrary", "moved " + copiedLibraryPath + "to" + destFilePath);
+                load(destFilePath);
+                break;
             }
+
         } else {
             try {
                 copyAndLoadLibrary(destFilePath);

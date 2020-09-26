@@ -14,7 +14,7 @@
 
 #if defined(__APPLE__) || defined(__MACOSX)
 static const char *default_so_paths[] = {
-  "libOpenCL.so"
+  "libOpenCL.so",
   "/System/Library/Frameworks/OpenCL.framework/OpenCL"
 };
 #elif defined(__ANDROID__)
