@@ -141,6 +141,8 @@ public class AndroidLauncher extends AndroidApplication {
         if (!(targetFile.exists() && targetFile.length() == so_file.length())) {
             Runtime.getRuntime().exec(new String[]{"cp", so_path, filesDirPath + "/"}).waitFor();
             Log.i("copyAndLoadLibrary", "copied " + so_path + " to " + target);
+        } else {
+            Log.d("copyAndLoadLibrary", "skipped copying " + so_name + " as it exists");
         }
         String libFileName;
         while (true) {
