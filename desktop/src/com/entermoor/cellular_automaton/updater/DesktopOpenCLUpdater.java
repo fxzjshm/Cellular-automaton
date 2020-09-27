@@ -32,7 +32,6 @@ public class DesktopOpenCLUpdater extends OpenCLUpdater {
     public long clPlatform, clDevice;
     // public CLCapabilities platformCapabilities, deviceCapabilities;
     public IntBuffer errcode_ret = BufferUtils.createIntBuffer(1);
-    ;
 
     public long clContext;
     public CLContextCallback clContextCB;

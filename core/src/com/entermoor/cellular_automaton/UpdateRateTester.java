@@ -22,6 +22,7 @@ public class UpdateRateTester {
         for (CellPoolUpdater updater : main.updaters) {
             try {
                 updater.setUpdateRate(testUpdateRate(updater));
+                main.updaterChooser.updateList();
             } catch (Throwable t) {
                 if (Gdx.app != null) {
                     Gdx.app.error("UpdateRateTester", "", t);
