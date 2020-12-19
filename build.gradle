@@ -113,17 +113,6 @@ project(":core") {
         implementation "com.kotcrab.vis:vis-ui:$visuiVersion"
     }
 }
-project(":ios-moe") {
-    apply plugin: "moe"
-
-    configurations { natives }
-
-    dependencies {
-        implementation project(":core")
-        implementation "com.badlogicgames.gdx:gdx-backend-moe:$gdxVersion"
-        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
-    }
-}
 tasks.eclipse.doLast {
     delete ".project"
 }
