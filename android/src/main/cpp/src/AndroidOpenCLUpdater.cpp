@@ -1,5 +1,6 @@
 #include "AndroidOpenCLUpdater.h"
 #include <cstring>
+#include <cstdlib>
 
 static cl_int ret = 0;
 cl_context clContext;

@@ -1,5 +1,6 @@
 #include "CLUtil.h"
 #include <dlfcn.h>
+#include <cstdlib>
 
 extern "C" {
 char *getPlatformInfoString(cl_platform_id platformId, cl_platform_info info) {
@@ -65,7 +66,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_entermoor_cellular_1automaton_AndroidLauncher__1_1dlopen(JNIEnv *env, jclass clazz,
                                                                   jstring filename) {
-    return reinterpret_cast<jlong>(__dlopen(jstringToChar(env, filename), RTLD_LAZY));
+    return reinterpret_cast<jlong>(dlopen(jstringToChar(env, filename), RTLD_LAZY));
 }
 
 extern "C"
