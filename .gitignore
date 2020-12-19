@@ -33,6 +33,8 @@ android/gen/
 *.iml
 out/
 com_crashlytics_export_strings.xml
+/android/.externalNativeBuild/
+/android/.cxx/
 
 ## Eclipse
 .classpath
@@ -68,4 +70,3 @@ build/
 ## OS Specific
 .DS_Store
 Thumbs.db
-/android/.externalNativeBuild/
