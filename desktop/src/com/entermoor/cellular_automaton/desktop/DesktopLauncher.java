@@ -13,10 +13,10 @@ public class DesktopLauncher {
         CellularAutomaton main = new CellularAutomaton();
         CellularAutomaton.asyncExecutor.submit(() -> {
             main.updaters.addAll(DesktopOpenCLUpdaterGenerator.generateOpenCLUpdater());
-
             for (CellPoolUpdater updater : main.updaters) {
                 if (updater instanceof DesktopOpenCLUpdater) {
                     main.updater = updater;
+                    break;
                 }
             }
             return null;
