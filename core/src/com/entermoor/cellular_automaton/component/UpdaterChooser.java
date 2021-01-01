@@ -2,9 +2,8 @@ package com.entermoor.cellular_automaton.component;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -67,28 +66,21 @@ public class UpdaterChooser extends ApplicationAdapter {
         scrollPane = new VisScrollPane(list);
         dialog.getContentTable().add(scrollPane);
         okButton = new VisTextButton("Yes");
-        okButton.addListener(new EventListener() {
+        okButton.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchDown:
-                            return true;
-                        case touchUp:
-                            CellPoolUpdater newUpdater = list.getSelected();
-                            if (null != newUpdater) {
-                                main.updater = newUpdater;
-                                Gdx.app.debug("UpdaterChooser", "Chosen " + newUpdater.getName());
-                            }
-                            dialog.cancel();
-                            dialog.getStage().getRoot().removeActor(dialog);
-                            return true;
-                        default:
-                            return false;
-                    }
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                CellPoolUpdater newUpdater = list.getSelected();
+                if (null != newUpdater) {
+                    main.updater = newUpdater;
+                    Gdx.app.debug("UpdaterChooser", "Chosen " + newUpdater.getName());
                 }
-                return false;
+                dialog.cancel();
+                dialog.getStage().getRoot().removeActor(dialog);
             }
         });
         dialog.getButtonsTable().add(okButton);
