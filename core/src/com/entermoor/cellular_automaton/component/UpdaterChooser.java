@@ -87,10 +87,7 @@ public class UpdaterChooser extends ApplicationAdapter {
     }
 
     public void showChoosingDialog() {
-        updateList();
-        scrollPane.updateVisualScroll();
-        dialog.pack();
-        dialog.centerWindow();
+        updateDialog();
         main.ui.stage.addActor(dialog);
         CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
             @Override
@@ -109,5 +106,12 @@ public class UpdaterChooser extends ApplicationAdapter {
             updater.updateEntryMessage();
         }
         list.setItems(updatersArray);
+    }
+
+    public void updateDialog() {
+        updateList();
+        scrollPane.updateVisualScroll();
+        dialog.pack();
+        dialog.centerWindow();
     }
 }
