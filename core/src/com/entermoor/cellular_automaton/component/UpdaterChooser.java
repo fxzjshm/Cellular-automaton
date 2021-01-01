@@ -56,12 +56,8 @@ public class UpdaterChooser extends ApplicationAdapter {
         Gdx.app.debug("UpdaterChooser", "Chosen " + main.updater.getName());
 
         dialog = new VisDialog("Choose the cell pool updater");
-        /*
-        Don't know why these may cause dialog not removed from the stage
-        but not receiving input event any more when 'closed'
-        */
-        // dialog.closeOnEscape();
-        // dialog.addCloseButton();
+        dialog.closeOnEscape();
+        dialog.addCloseButton();
         list = new VisList<CellPoolUpdater>();
         scrollPane = new VisScrollPane(list);
         dialog.getContentTable().add(scrollPane);
@@ -79,8 +75,7 @@ public class UpdaterChooser extends ApplicationAdapter {
                     main.updater = newUpdater;
                     Gdx.app.debug("UpdaterChooser", "Chosen " + newUpdater.getName());
                 }
-                dialog.cancel();
-                dialog.getStage().getRoot().removeActor(dialog);
+                dialog.fadeOut();
             }
         });
         dialog.getButtonsTable().add(okButton);
@@ -89,6 +84,7 @@ public class UpdaterChooser extends ApplicationAdapter {
     public void showChoosingDialog() {
         updateDialog();
         main.ui.stage.addActor(dialog);
+        dialog.fadeIn();
         CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
             @Override
             public Object call() {
