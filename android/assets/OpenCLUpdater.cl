@@ -31,7 +31,11 @@ __kernel void update(__global const int *oldMapBool, __global int *newMapBool,
     // if(newMapBool[xXh + y] != oldMapBool[xXh + y])printf("%d,%d,%d\n",x,y,neighbourCount);
 }
 
+// ~5% faster than the alternative implementation on Vega 7 @ R7-4800H
+// #define GET_REAL_ALT_IMPL
+
 inline int getRealX(int x, int width) {
+#ifndef GET_REAL_ALT_IMPL
     while (x < 0) {
         x += width;
     }
@@ -40,9 +44,15 @@ inline int getRealX(int x, int width) {
         x -= width;
     }
     return x;
+#else
+    int ret = x % width;
+    if(ret < 0) ret += width;
+    return ret;
+#endif
 }
 
 inline int getRealY(int y, int height) {
+#ifndef GET_REAL_ALT_IMPL
     while (y < 0) {
         y += height;
     }
@@ -51,4 +61,9 @@ inline int getRealY(int y, int height) {
         y -= height;
     }
     return y;
+#else
+    int ret = y % height;
+    if(ret < 0) ret += height;
+    return ret;
+#endif
 }

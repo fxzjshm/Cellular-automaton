@@ -3,13 +3,39 @@
 // Reference: https://github.com/Erkaman/vulkan_minimal_compute/blob/master/src/main.cpp
 
 VkInstance instance;
-std::vector<const char *> enabledExtensions;
+
 VkPhysicalDevice physicalDevice;
+
+std::vector<const char *> enabledLayers;
+std::vector<const char *> enabledExtensions;
+
+extern "C" {
+
+inline bool checkVkApiVersion(VkPhysicalDevice vkPhysicalDevice, int requiredApiVersion) {
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+    vkGetPhysicalDeviceProperties(vkPhysicalDevice, &physicalDeviceProperties);
+    return physicalDeviceProperties.apiVersion > (requiredApiVersion);
+}
+
+inline bool checkVkExtension(VkPhysicalDevice vkPhysicalDevice, const char *extensionName) {
+    uint32_t deviceExtensionCount;
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, NULL, &deviceExtensionCount, NULL);
+    std::vector<VkExtensionProperties> deviceExtensionProperties(deviceExtensionCount);
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, NULL, &deviceExtensionCount,
+                                         deviceExtensionProperties.data());
+    for (VkExtensionProperties prop : deviceExtensionProperties) {
+        if (strcmp(extensionName, prop.extensionName) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+}
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVulkanLibrary0(
         JNIEnv *env, jclass clazz) {
-// TODO: implement loadVulkanLibrary0()
     try {
         int ret = InitVulkan();
         if (ret == 0) {
@@ -26,20 +52,13 @@ Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVu
         std::vector<VkExtensionProperties> extensionProperties(extensionCount);
         vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties.data());
 
-        bool foundExtension = false;
+        bool found_VK_KHR_VARIABLE_POINTERS_EXTENSION = false;
         for (VkExtensionProperties prop : extensionProperties) {
             if (strcmp(VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME, prop.extensionName) == 0) {
-                foundExtension = true;
+                found_VK_KHR_VARIABLE_POINTERS_EXTENSION = true;
                 break;
             }
-
         }
-
-        if (!foundExtension) {
-            return -1;
-        }
-        enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-        enabledExtensions.push_back(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME);
 
         /*
         Next, we actually create the instance.
@@ -63,8 +82,8 @@ Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVu
         createInfo.pApplicationInfo = &applicationInfo;
 
         // Give our desired layers and extensions to vulkan.
-        createInfo.enabledLayerCount = 0;
-        createInfo.ppEnabledLayerNames = NULL;
+        createInfo.enabledLayerCount = enabledLayers.size();
+        createInfo.ppEnabledLayerNames = enabledLayers.data();
         createInfo.enabledExtensionCount = enabledExtensions.size();
         createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
@@ -73,6 +92,8 @@ Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVu
         Having created the instance, we can actually start using vulkan.
         */
         VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, &instance));
+
+
 
         /*
         So, first we will list all physical devices on the system with vkEnumeratePhysicalDevices .
@@ -85,8 +106,21 @@ Java_com_entermoor_cellular_1automaton_android_vulkan_AndroidVulkanLoader_loadVu
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
-        physicalDevice = devices[0];
 
+        for (VkPhysicalDevice vkPhysicalDevice:devices) {
+            // VK_KHR_variable_pointers has been promoted to Vulkan 1.1
+            // the extensions may be on the device instead of the instance
+            if (checkVkApiVersion(vkPhysicalDevice, VK_MAKE_VERSION(1, 1, 0)) ||
+                checkVkExtension(vkPhysicalDevice, VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME)) {
+                found_VK_KHR_VARIABLE_POINTERS_EXTENSION = true;
+                physicalDevice = vkPhysicalDevice;
+                break;
+            }
+        }
+
+        if ((!found_VK_KHR_VARIABLE_POINTERS_EXTENSION) || (physicalDevice == NULL)) {
+            return -1;
+        }
     } catch (...) {
         return -1;
     }

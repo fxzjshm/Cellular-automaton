@@ -14,6 +14,13 @@ VkDescriptorPool descriptorPool;
 VkDescriptorSet descriptorSet;
 VkDescriptorSetLayout descriptorSetLayout;
 
+VkBuffer buffer;
+VkDeviceMemory bufferMemory;
+uint32_t bufferSize;
+
+VkQueue queue;
+uint32_t queueFamilyIndex;
+
 // Returns the index of a queue family that supports compute operations.
 uint32_t getComputeQueueFamilyIndex() {
     uint32_t queueFamilyCount;
