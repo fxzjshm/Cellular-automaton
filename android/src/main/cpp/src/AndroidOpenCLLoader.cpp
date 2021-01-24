@@ -1,4 +1,5 @@
 #include "AndroidOpenCLLoader.h"
+#include <cstdlib>
 
 extern "C" {
 cl_platform_id platformId;

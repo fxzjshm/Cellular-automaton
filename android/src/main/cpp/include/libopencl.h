@@ -1,50 +1,7 @@
 #ifndef LIBOPENCL_STUB_H
 #define LIBOPENCL_STUB_H
 
-// added some macros:
-// USE_DLOPEN dlopen() directly
-// USE_NDK_DLOPEN Rprop/ndk_dlopen
-// USE_BY_DLOPEN hack0z/byOpen
-#define USE_DLOPEN
-
-#include <stdlib.h>
-#include <sys/stat.h>
-
-#if (!defined(USE_NDK_DLOPEN)) && (!defined(USE_BY_DLOPEN))
-#define USE_DLOPEN
-#endif
-
-// @off
-// @formatter:off
-#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
-    #if defined(USE_NDK_DLOPEN)
-        #include "dlopen.h"
-    #elif defined(USE_BY_DLOPEN)
-        #include "byopen.h"
-        #define RTLD_LAZY BY_RTLD_LAZY
-    #else
-        #error "Must pick an implemention of dlopen()!"
-    #endif
-#else
-#include <dlfcn.h>
-#endif
-// @on
-// @formatter:on
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void *__dlopen(const char *__filename, int __flag);
-
-void *__dlsym(void *__handle, const char *__symbol);
-
-int __dlclose(void *__handle);
-
-#ifdef __cplusplus
-}
-#endif
-
+#define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 #include <CL/cl_gl.h>
 
@@ -59,18 +16,19 @@ typedef cl_int (*f_clGetDeviceIDs) (cl_platform_id, cl_device_type, cl_uint, cl_
 
 typedef cl_int (*f_clGetDeviceInfo) (cl_device_id, cl_device_info, size_t, void *, size_t *);
 
-typedef cl_int (*f_clCreateSubDevices) (cl_device_id, const cl_device_partition_property *,
-                    cl_uint, cl_device_id *, cl_uint *);
+typedef cl_int (*f_clCreateSubDevices)(cl_device_id, const cl_device_partition_property *,
+									   cl_uint, cl_device_id *, cl_uint *);
 
 typedef cl_int (*f_clRetainDevice) (cl_device_id);
 
 typedef cl_int (*f_clReleaseDevice) (cl_device_id);
 
-typedef cl_context (*f_clCreateContext) (const cl_context_properties *, cl_uint, const cl_device_id *,
-                            f_pfn_notify, void *, cl_int *);
+typedef cl_context (*f_clCreateContext)(const cl_context_properties *, cl_uint,
+										const cl_device_id *,
+										f_pfn_notify, void *, cl_int *);
 
-typedef cl_context (*f_clCreateContextFromType) (const cl_context_properties *, cl_device_type,
-                                f_pfn_notify, void *, cl_int *);
+typedef cl_context (*f_clCreateContextFromType)(const cl_context_properties *, cl_device_type,
+												f_pfn_notify, void *, cl_int *);
 
 typedef cl_int (*f_clRetainContext) (cl_context);
 
@@ -123,8 +81,8 @@ typedef cl_int (*f_clRetainProgram) (cl_program);
 
 typedef cl_int (*f_clReleaseProgram) (cl_program);
 
-typedef cl_int (*f_clBuildProgram) (cl_program, cl_uint, const cl_device_id *, const char *,
-        void (*pfn_notify)(cl_program program, void * user_data), void *);
+typedef cl_int (*f_clBuildProgram)(cl_program, cl_uint, const cl_device_id *, const char *,
+								   void (*pfn_notify)(cl_program program, void *user_data), void *);
 
 typedef cl_int (*f_clCompileProgram) (cl_program, cl_uint, const cl_device_id *, const char *, cl_uint, const cl_program *,
         const char **, void (*pfn_notify)(cl_program program, void * user_data), void *);
@@ -191,11 +149,15 @@ typedef cl_int (*f_clEnqueueCopyBuffer) (cl_command_queue, cl_mem, cl_mem, size_
 typedef cl_int (*f_clEnqueueCopyBufferRect) (cl_command_queue, cl_mem, cl_mem, const size_t *, const size_t *, const size_t *,
                             size_t, size_t, size_t, size_t, cl_uint, const cl_event *, cl_event *);
 
-typedef cl_int (*f_clEnqueueReadImage) (cl_command_queue, cl_mem, cl_bool, const size_t *, const size_t *,
-                            size_t, size_t, void *, cl_uint, const cl_event *, cl_event *);
+typedef cl_int (*f_clEnqueueReadImage)(cl_command_queue, cl_mem, cl_bool, const size_t *,
+									   const size_t *,
+									   size_t, size_t, void *, cl_uint, const cl_event *,
+									   cl_event *);
 
-typedef cl_int (*f_clEnqueueWriteImage) (cl_command_queue, cl_mem, cl_bool, const size_t *, const size_t *,
-                            size_t, size_t, const void *, cl_uint, const cl_event *, cl_event *);
+typedef cl_int (*f_clEnqueueWriteImage)(cl_command_queue, cl_mem, cl_bool, const size_t *,
+										const size_t *,
+										size_t, size_t, const void *, cl_uint, const cl_event *,
+										cl_event *);
 
 typedef cl_int (*f_clEnqueueFillImage) (cl_command_queue, cl_mem, const void *, const size_t *, const size_t *, cl_uint, const cl_event *, cl_event *);
 
@@ -206,16 +168,17 @@ typedef cl_int (*f_clEnqueueCopyImageToBuffer) (cl_command_queue, cl_mem, cl_mem
 
 typedef cl_int (*f_clEnqueueCopyBufferToImage) (cl_command_queue, cl_mem, cl_mem, size_t, const size_t *, const size_t *, cl_uint, const cl_event *, cl_event *);
 
-typedef void * (*f_clEnqueueMapBuffer) (cl_command_queue, cl_mem, cl_bool, cl_map_flags, size_t,
-                        size_t, cl_uint, const cl_event *, cl_event *, cl_int *);
+typedef void *(*f_clEnqueueMapBuffer)(cl_command_queue, cl_mem, cl_bool, cl_map_flags, size_t,
+									  size_t, cl_uint, const cl_event *, cl_event *, cl_int *);
 
 typedef void * (*f_clEnqueueMapImage) (cl_command_queue, cl_mem, cl_bool, cl_map_flags, const size_t *, const size_t *,
                   size_t *, size_t *, cl_uint, const cl_event *, cl_event *, cl_int *);
 
 typedef cl_int (*f_clEnqueueUnmapMemObject) (cl_command_queue, cl_mem, void *, cl_uint, const cl_event *, cl_event *);
 
-typedef cl_int (*f_clEnqueueMigrateMemObjects)(cl_command_queue, cl_uint, const cl_mem *, cl_mem_migration_flags,
-                        cl_uint, const cl_event *, cl_event *);
+typedef cl_int (*f_clEnqueueMigrateMemObjects)(cl_command_queue, cl_uint, const cl_mem *,
+											   cl_mem_migration_flags,
+											   cl_uint, const cl_event *, cl_event *);
 
 typedef cl_int (*f_clEnqueueNDRangeKernel)(cl_command_queue, cl_kernel, cl_uint, const size_t *, const size_t *,
                        const size_t *, cl_uint, const cl_event *, cl_event *);
@@ -231,11 +194,12 @@ typedef cl_int (*f_clEnqueueBarrierWithWaitList)(cl_command_queue, cl_uint, cons
 
 typedef void * (*f_clGetExtensionFunctionAddressForPlatform)(cl_platform_id, const char *);
 
-typedef cl_mem (*f_clCreateImage2D)(cl_context, cl_mem_flags,const cl_image_format *, size_t, size_t,
-                                size_t, void *, cl_int *);
+typedef cl_mem (*f_clCreateImage2D)(cl_context, cl_mem_flags, const cl_image_format *, size_t,
+									size_t,
+									size_t, void *, cl_int *);
 
 typedef cl_mem (*f_clCreateImage3D)(cl_context, cl_mem_flags, const cl_image_format *, size_t,
-                        size_t, size_t, size_t, size_t, void *, cl_int *);
+									size_t, size_t, size_t, size_t, void *, cl_int *);
 
 typedef cl_int (*f_clEnqueueMarker)(cl_command_queue, cl_event *);
 

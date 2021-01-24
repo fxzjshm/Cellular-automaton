@@ -1,5 +1,6 @@
 #include "AndroidOpenCLUpdater.h"
 #include <cstring>
+#include <cstdlib>
 
 static cl_int ret = 0;
 cl_context clContext;
@@ -56,6 +57,11 @@ Java_com_entermoor_cellular_1automaton_updater_AndroidOpenCLUpdater_createProgra
     updaterProgram = clCreateProgramWithSource(clContext, 1, src2, lengths, &ret);
     checkCLError(ret);
     ret = clBuildProgram(updaterProgram, 1, &deviceId, "", NULL, NULL);
+    size_t log_size;
+    clGetProgramBuildInfo(updaterProgram, deviceId, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+    char *log = (char *) malloc(log_size);
+    clGetProgramBuildInfo(updaterProgram, deviceId, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+    LOGE("%s\n", log);
     checkCLError(ret);
 }
 

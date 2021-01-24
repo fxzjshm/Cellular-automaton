@@ -29,7 +29,8 @@ uint32_t getComputeQueueFamilyIndex() {
 
     // Retrieve all queue families.
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
+                                             queueFamilies.data());
 
     // Now find a family that supports compute.
     uint32_t i = 0;

@@ -3,9 +3,8 @@ package com.entermoor.cellular_automaton.component;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -35,21 +34,16 @@ public class UIImageButtons extends ApplicationAdapter {
 
         pause.setSkin(skin);
         pause.setBounds(CellularAutomaton.pixmapLeftMargin, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        pause.addListener(new EventListener() {
+        pause.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchUp:
-                            main.isRunning = false;
-                            Gdx.app.debug("pause", "paused");
-                            return false;
-                        case touchDown:
-                            return true;
-                    }
-                }
-                return false;
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                main.isRunning = false;
+                Gdx.app.debug("pause", "paused");
             }
         });
         stage.addActor(pause);
@@ -58,21 +52,16 @@ public class UIImageButtons extends ApplicationAdapter {
 
         start.setSkin(skin);
         start.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth / 4, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        start.addListener(new EventListener() {
+        start.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchUp:
-                            main.isRunning = true;
-                            Gdx.app.debug("start", "resumed");
-                            return false;
-                        case touchDown:
-                            return true;
-                    }
-                }
-                return false;
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                main.isRunning = true;
+                Gdx.app.debug("start", "resumed");
             }
         });
         stage.addActor(start);
@@ -82,20 +71,15 @@ public class UIImageButtons extends ApplicationAdapter {
 
         randomize.setSkin(skin);
         randomize.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth / 2, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        randomize.addListener(new EventListener() {
+        randomize.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchUp:
-                            main.random();
-                            return false;
-                        case touchDown:
-                            return true;
-                    }
-                }
-                return false;
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                main.random();
             }
         });
         stage.addActor(randomize);
@@ -104,21 +88,16 @@ public class UIImageButtons extends ApplicationAdapter {
 
         chooseUpdater.setSkin(skin);
         chooseUpdater.setBounds(CellularAutomaton.pixmapLeftMargin + gWidth * 3 / 4, CellularAutomaton.pixmapDownMargin + gHeight, gHeight / 4, heightLeft);
-        chooseUpdater.addListener(new EventListener() {
+        chooseUpdater.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchUp:
-                            main.updaterChooser.showChoosingDialog();
-                            Gdx.app.debug("chooseUpdater", "choosing");
-                            return false;
-                        case touchDown:
-                            return true;
-                    }
-                }
-                return false;
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                main.updaterChooser.showChoosingDialog();
+                Gdx.app.debug("chooseUpdater", "choosing");
             }
         });
         stage.addActor(chooseUpdater);

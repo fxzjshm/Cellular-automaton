@@ -2,9 +2,8 @@ package com.entermoor.cellular_automaton.component;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -57,49 +56,35 @@ public class UpdaterChooser extends ApplicationAdapter {
         Gdx.app.debug("UpdaterChooser", "Chosen " + main.updater.getName());
 
         dialog = new VisDialog("Choose the cell pool updater");
-        /*
-        Don't know why these may cause dialog not removed from the stage
-        but not receiving input event any more when 'closed'
-        */
-        // dialog.closeOnEscape();
-        // dialog.addCloseButton();
+        dialog.closeOnEscape();
+        dialog.addCloseButton();
         list = new VisList<CellPoolUpdater>();
         scrollPane = new VisScrollPane(list);
         dialog.getContentTable().add(scrollPane);
         okButton = new VisTextButton("Yes");
-        okButton.addListener(new EventListener() {
+        okButton.addListener(new InputListener() {
             @Override
-            public boolean handle(Event event) {
-                if (event instanceof InputEvent) {
-                    InputEvent e = (InputEvent) event;
-                    switch (e.getType()) {
-                        case touchDown:
-                            return true;
-                        case touchUp:
-                            CellPoolUpdater newUpdater = list.getSelected();
-                            if (null != newUpdater) {
-                                main.updater = newUpdater;
-                                Gdx.app.debug("UpdaterChooser", "Chosen " + newUpdater.getName());
-                            }
-                            dialog.cancel();
-                            dialog.getStage().getRoot().removeActor(dialog);
-                            return true;
-                        default:
-                            return false;
-                    }
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                CellPoolUpdater newUpdater = list.getSelected();
+                if (null != newUpdater) {
+                    main.updater = newUpdater;
+                    Gdx.app.debug("UpdaterChooser", "Chosen " + newUpdater.getName());
                 }
-                return false;
+                dialog.fadeOut();
             }
         });
         dialog.getButtonsTable().add(okButton);
     }
 
     public void showChoosingDialog() {
-        updateList();
-        scrollPane.updateVisualScroll();
-        dialog.pack();
-        dialog.centerWindow();
+        updateDialog();
         main.ui.stage.addActor(dialog);
+        dialog.fadeIn();
         CellularAutomaton.asyncExecutor.submit(new AsyncTask<Object>() {
             @Override
             public Object call() {
@@ -117,5 +102,12 @@ public class UpdaterChooser extends ApplicationAdapter {
             updater.updateEntryMessage();
         }
         list.setItems(updatersArray);
+    }
+
+    public void updateDialog() {
+        updateList();
+        scrollPane.updateVisualScroll();
+        dialog.pack();
+        dialog.centerWindow();
     }
 }

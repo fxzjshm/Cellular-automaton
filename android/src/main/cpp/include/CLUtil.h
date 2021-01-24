@@ -20,7 +20,7 @@
         oss << "OpenCL error [" << errcode << "] in " << __FILE__ << " at line " << __LINE__  << std::endl; \
         std::string s = oss.str(); \
         LOGE(s.c_str(), nullptr); \
-        throw new std::runtime_error(s); \
+        throw std::runtime_error(s); \
     } \
 }
 

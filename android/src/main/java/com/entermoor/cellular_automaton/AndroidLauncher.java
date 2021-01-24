@@ -90,6 +90,12 @@ public class AndroidLauncher extends AndroidApplication {
     }
 
     public static void prepareOpenCLLibrary() {
+        try {
+            System.loadLibrary("OpenCL");
+            return;
+        } catch (UnsatisfiedLinkError ignored) {
+
+        }
         setenv("LD_LIBRARY_PATH", filesDirPath + ":" + LD_LIBRARY_PATH, true);
         String destFilePath = filesDirPath + "/" + destFileName;
         File destFile = new File(destFilePath);

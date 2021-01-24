@@ -9,6 +9,8 @@
  *   If none of these are set, default system paths will be considered
 **/
 
+#include <stdlib.h>
+#include <dlfcn.h>
 #include "libopencl.h"
 
 
@@ -19,15 +21,15 @@ static const char *default_so_paths[] = {
 };
 #elif defined(__ANDROID__)
 static const char *default_so_paths[] = {
-  "/system/lib/libOpenCL.so",
-  "/system/vendor/lib/libOpenCL.so",
-  "/system/vendor/lib/egl/libGLES_mali.so",
-  "/system/vendor/lib64/egl/libGLES_mali.so",
-  "/system/vendor/lib64/egl/libGLES_1_mali.so", // MI 5C
-  "/system/lib64/egl/libGLES_mali.so",
-  "/system/vendor/lib/libPVROCL.so",
-  "/data/data/org.pocl.libs/files/lib/libpocl.so",
-  "libOpenCL.so"
+        "/system/lib/libOpenCL.so",
+        "/system/vendor/lib/libOpenCL.so",
+        "/system/vendor/lib/egl/libGLES_mali.so",
+        "/system/lib64/egl/libGLES_mali.so",
+        "/system/vendor/lib64/egl/libGLES_mali.so",
+        "/system/vendor/lib64/egl/libGLES_1_mali.so",
+        "/system/vendor/lib/libPVROCL.so",
+        "/data/data/org.pocl.libs/files/lib/libpocl.so",
+        "libOpenCL.so"
 };
 #elif defined(_WIN32)
 static const char *default_so_paths[] = {
@@ -47,84 +49,25 @@ static const char *default_so_paths[] = {
 static void *so_handle = NULL;
 
 
-static int access_file(const char *filename)
-{
-  struct stat buffer;
-  return (stat(filename, &buffer) == 0);
-}
-
-void* __dlopen(const char* __filename, int __flag){
-#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
-#ifdef USE_NDK_DLOPEN
-  return ndk_dlopen(__filename,__flag);
-#endif
-#ifdef USE_BY_DLOPEN
-  return by_dlopen(__filename,__flag);
-#endif
-#else
-  return dlopen(__filename, __flag);
-#endif
-}
-
-void* __dlsym(void* __handle, const char* __symbol) {
-#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
-#ifdef USE_NDK_DLOPEN
-  return ndk_dlsym(__handle, __symbol);
-#endif
-#ifdef USE_BY_DLOPEN
-  return by_dlsym(__handle, __symbol);
-#endif
-#else
-  return dlsym(__handle, __symbol);
-#endif
-}
-
-int __dlclose(void* __handle) {
-#if defined(__ANDROID__) && (!defined(USE_DLOPEN))
-#ifdef USE_NDK_DLOPEN
-  return ndk_dlclose(__handle);
-#endif
-#ifdef USE_BY_DLOPEN
-  return by_dlclose(__handle);
-#endif
-#else
-  return dlclose(__handle);
-#endif
-}
-
-static int open_libopencl_so()
-{
-  char *path = NULL, *str = NULL;
+static int open_libopencl_so() {
+  char *str = NULL;
   int i;
 
-  if((str=getenv("LIBOPENCL_SO_PATH")) && access_file(str)) {
-    path = str;
-  }
-  else if((str=getenv("LIBOPENCL_SO_PATH_2")) && access_file(str)) {
-    path = str;
-  }
-  else if((str=getenv("LIBOPENCL_SO_PATH_3")) && access_file(str)) {
-    path = str;
-  }
-  else if((str=getenv("LIBOPENCL_SO_PATH_4")) && access_file(str)) {
-    path = str;
+  if ((str = getenv("LIBOPENCL_SO_PATH")) && (so_handle = dlopen(str, RTLD_LAZY))) {
+
+  } else if ((str = getenv("LIBOPENCL_SO_PATH_2")) && (so_handle = dlopen(str, RTLD_LAZY))) {
+
+  } else if ((str = getenv("LIBOPENCL_SO_PATH_3")) && (so_handle = dlopen(str, RTLD_LAZY))) {
+
+  } else if ((str = getenv("LIBOPENCL_SO_PATH_4")) && (so_handle = dlopen(str, RTLD_LAZY))) {
+
   }
 
-  if(path)
-  {
-    so_handle = __dlopen(path, RTLD_LAZY);
-  }
-
-  for(i=0; (!so_handle) && (i<(sizeof(default_so_paths) / sizeof(char*))); i++)
-  {
-    if(access_file(default_so_paths[i]))
-    {
-      path = (char *) default_so_paths[i];
-      so_handle = __dlopen(path, RTLD_LAZY);
-      if(so_handle)
-      {
-          return 0;
-      }
+  for(i=0; (!so_handle) && (i<(sizeof(default_so_paths) / sizeof(char*))); i++) {
+    char *path = (char *) default_so_paths[i];
+    so_handle = dlopen(path, RTLD_LAZY);
+    if (so_handle) {
+      break;
     }
   }
 
@@ -141,7 +84,7 @@ static int open_libopencl_so()
 void stubOpenclReset()
 {
   if(so_handle)
-    __dlclose(so_handle);
+    dlclose(so_handle);
 
   so_handle = NULL;
 }
@@ -157,7 +100,7 @@ clGetPlatformIDs(cl_uint          num_entries,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetPlatformIDs) __dlsym(so_handle, "clGetPlatformIDs");
+    func = (f_clGetPlatformIDs) dlsym(so_handle, "clGetPlatformIDs");
 
   if(func) {
     return func(num_entries, platforms, num_platforms);
@@ -180,7 +123,7 @@ clGetPlatformInfo(cl_platform_id   platform,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetPlatformInfo) __dlsym(so_handle, "clGetPlatformInfo");
+    func = (f_clGetPlatformInfo) dlsym(so_handle, "clGetPlatformInfo");
 
   if(func) {
     return func(platform, param_name, param_value_size, param_value, param_value_size_ret);
@@ -203,7 +146,7 @@ clGetDeviceIDs(cl_platform_id   platform,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetDeviceIDs) __dlsym(so_handle, "clGetDeviceIDs");
+    func = (f_clGetDeviceIDs) dlsym(so_handle, "clGetDeviceIDs");
 
   if(func) {
     return func(platform, device_type, num_entries, devices, num_devices);
@@ -225,7 +168,7 @@ clGetDeviceInfo(cl_device_id    device,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetDeviceInfo) __dlsym(so_handle, "clGetDeviceInfo");
+    func = (f_clGetDeviceInfo) dlsym(so_handle, "clGetDeviceInfo");
 
   if(func) {
     return func(device, param_name, param_value_size, param_value, param_value_size_ret);
@@ -247,7 +190,7 @@ clCreateSubDevices(cl_device_id                         in_device,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateSubDevices) __dlsym(so_handle, "clCreateSubDevices");
+    func = (f_clCreateSubDevices) dlsym(so_handle, "clCreateSubDevices");
 
   if(func) {
     return func(in_device, properties, num_devices, out_devices, num_devices_ret);
@@ -265,7 +208,7 @@ clRetainDevice(cl_device_id device)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainDevice) __dlsym(so_handle, "clRetainDevice");
+    func = (f_clRetainDevice) dlsym(so_handle, "clRetainDevice");
 
   if(func) {
     return func(device);
@@ -283,7 +226,7 @@ clReleaseDevice(cl_device_id device)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseDevice) __dlsym(so_handle, "clReleaseDevice");
+    func = (f_clReleaseDevice) dlsym(so_handle, "clReleaseDevice");
 
   if(func) {
     return func(device);
@@ -307,7 +250,7 @@ clCreateContext(const cl_context_properties * properties,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateContext) __dlsym(so_handle, "clCreateContext");
+    func = (f_clCreateContext) dlsym(so_handle, "clCreateContext");
 
   if(func) {
     return func(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
@@ -329,7 +272,7 @@ clCreateContextFromType(const cl_context_properties * properties,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateContextFromType) __dlsym(so_handle, "clCreateContextFromType");
+    func = (f_clCreateContextFromType) dlsym(so_handle, "clCreateContextFromType");
 
   if(func) {
     return func(properties, device_type, pfn_notify, user_data, errcode_ret);
@@ -347,7 +290,7 @@ clRetainContext(cl_context context)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainContext) __dlsym(so_handle, "clRetainContext");
+    func = (f_clRetainContext) dlsym(so_handle, "clRetainContext");
 
   if(func) {
     return func(context);
@@ -365,7 +308,7 @@ clReleaseContext(cl_context context)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseContext) __dlsym(so_handle, "clReleaseContext");
+    func = (f_clReleaseContext) dlsym(so_handle, "clReleaseContext");
 
   if(func) {
     return func(context);
@@ -387,7 +330,7 @@ clGetContextInfo(cl_context         context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetContextInfo) __dlsym(so_handle, "clGetContextInfo");
+    func = (f_clGetContextInfo) dlsym(so_handle, "clGetContextInfo");
 
   if(func) {
     return func(context, param_name, param_value_size,
@@ -410,7 +353,7 @@ clCreateCommandQueue(cl_context                     context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateCommandQueue) __dlsym(so_handle, "clCreateCommandQueue");
+    func = (f_clCreateCommandQueue) dlsym(so_handle, "clCreateCommandQueue");
 
   if(func) {
     return func(context, device, properties, errcode_ret);
@@ -428,7 +371,7 @@ clRetainCommandQueue(cl_command_queue command_queue)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainCommandQueue) __dlsym(so_handle, "clRetainCommandQueue");
+    func = (f_clRetainCommandQueue) dlsym(so_handle, "clRetainCommandQueue");
 
   if(func) {
     return func(command_queue);
@@ -446,7 +389,7 @@ clReleaseCommandQueue(cl_command_queue command_queue)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseCommandQueue) __dlsym(so_handle, "clReleaseCommandQueue");
+    func = (f_clReleaseCommandQueue) dlsym(so_handle, "clReleaseCommandQueue");
 
   if(func) {
     return func(command_queue);
@@ -468,7 +411,7 @@ clGetCommandQueueInfo(cl_command_queue      command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetCommandQueueInfo) __dlsym(so_handle, "clGetCommandQueueInfo");
+    func = (f_clGetCommandQueueInfo) dlsym(so_handle, "clGetCommandQueueInfo");
 
   if(func) {
     return func(command_queue, param_name, param_value_size,
@@ -492,7 +435,7 @@ clCreateBuffer(cl_context   context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateBuffer) __dlsym(so_handle, "clCreateBuffer");
+    func = (f_clCreateBuffer) dlsym(so_handle, "clCreateBuffer");
 
   if(func) {
     return func(context, flags, size, host_ptr, errcode_ret);
@@ -514,7 +457,7 @@ clCreateSubBuffer(cl_mem                   buffer,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateSubBuffer) __dlsym(so_handle, "clCreateSubBuffer");
+    func = (f_clCreateSubBuffer) dlsym(so_handle, "clCreateSubBuffer");
 
   if(func) {
     return func(buffer, flags, buffer_create_type,
@@ -538,7 +481,7 @@ clCreateImage(cl_context              context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateImage) __dlsym(so_handle, "clCreateImage");
+    func = (f_clCreateImage) dlsym(so_handle, "clCreateImage");
 
   if(func) {
     return func(context, flags, image_format, image_desc,
@@ -557,7 +500,7 @@ clRetainMemObject(cl_mem memobj)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainMemObject) __dlsym(so_handle, "clRetainMemObject");
+    func = (f_clRetainMemObject) dlsym(so_handle, "clRetainMemObject");
 
   if(func) {
     return func(memobj);
@@ -575,7 +518,7 @@ clReleaseMemObject(cl_mem memobj)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseMemObject) __dlsym(so_handle, "clReleaseMemObject");
+    func = (f_clReleaseMemObject) dlsym(so_handle, "clReleaseMemObject");
 
   if(func) {
     return func(memobj);
@@ -598,7 +541,7 @@ clGetSupportedImageFormats(cl_context           context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetSupportedImageFormats) __dlsym(so_handle, "clGetSupportedImageFormats");
+    func = (f_clGetSupportedImageFormats) dlsym(so_handle, "clGetSupportedImageFormats");
 
   if(func) {
     return func(context, flags, image_type, num_entries,
@@ -621,7 +564,7 @@ clGetMemObjectInfo(cl_mem           memobj,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetMemObjectInfo) __dlsym(so_handle, "clGetMemObjectInfo");
+    func = (f_clGetMemObjectInfo) dlsym(so_handle, "clGetMemObjectInfo");
 
   if(func) {
     return func(memobj, param_name, param_value_size,
@@ -644,7 +587,7 @@ clGetImageInfo(cl_mem           image,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetImageInfo) __dlsym(so_handle, "clGetImageInfo");
+    func = (f_clGetImageInfo) dlsym(so_handle, "clGetImageInfo");
 
   if(func) {
     return func(image, param_name, param_value_size,
@@ -665,7 +608,8 @@ clSetMemObjectDestructorCallback(  cl_mem memobj,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clSetMemObjectDestructorCallback) __dlsym(so_handle, "clSetMemObjectDestructorCallback");
+    func = (f_clSetMemObjectDestructorCallback) dlsym(so_handle,
+                                                      "clSetMemObjectDestructorCallback");
 
   if(func) {
     return func(memobj, pfn_notify, user_data);
@@ -687,7 +631,7 @@ clCreateSampler(cl_context          context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateSampler) __dlsym(so_handle, "clCreateSampler");
+    func = (f_clCreateSampler) dlsym(so_handle, "clCreateSampler");
 
   if(func) {
     return func(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
@@ -705,7 +649,7 @@ clRetainSampler(cl_sampler sampler)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainSampler) __dlsym(so_handle, "clRetainSampler");
+    func = (f_clRetainSampler) dlsym(so_handle, "clRetainSampler");
 
   if(func) {
     return func(sampler);
@@ -723,7 +667,7 @@ clReleaseSampler(cl_sampler sampler)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseSampler) __dlsym(so_handle, "clReleaseSampler");
+    func = (f_clReleaseSampler) dlsym(so_handle, "clReleaseSampler");
 
   if(func) {
     return func(sampler);
@@ -745,7 +689,7 @@ clGetSamplerInfo(cl_sampler         sampler,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetSamplerInfo) __dlsym(so_handle, "clGetSamplerInfo");
+    func = (f_clGetSamplerInfo) dlsym(so_handle, "clGetSamplerInfo");
 
   if(func) {
     return func(sampler, param_name, param_value_size, param_value, param_value_size_ret);
@@ -768,7 +712,7 @@ clCreateProgramWithSource(cl_context        context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateProgramWithSource) __dlsym(so_handle, "clCreateProgramWithSource");
+    func = (f_clCreateProgramWithSource) dlsym(so_handle, "clCreateProgramWithSource");
 
   if(func) {
     return func(context, count, strings, lengths, errcode_ret);
@@ -794,7 +738,7 @@ clCreateProgramWithBinary(cl_context                     context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateProgramWithBinary) __dlsym(so_handle, "clCreateProgramWithBinary");
+    func = (f_clCreateProgramWithBinary) dlsym(so_handle, "clCreateProgramWithBinary");
 
   if(func) {
     return func(context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
@@ -816,7 +760,8 @@ clCreateProgramWithBuiltInKernels(cl_context            context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateProgramWithBuiltInKernels) __dlsym(so_handle, "clCreateProgramWithBuiltInKernels");
+    func = (f_clCreateProgramWithBuiltInKernels) dlsym(so_handle,
+                                                       "clCreateProgramWithBuiltInKernels");
 
   if(func) {
     return func(context, num_devices, device_list, kernel_names, errcode_ret);
@@ -834,7 +779,7 @@ clRetainProgram(cl_program program)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainProgram) __dlsym(so_handle, "clRetainProgram");
+    func = (f_clRetainProgram) dlsym(so_handle, "clRetainProgram");
 
   if(func) {
     return func(program);
@@ -852,7 +797,7 @@ clReleaseProgram(cl_program program)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseProgram) __dlsym(so_handle, "clReleaseProgram");
+    func = (f_clReleaseProgram) dlsym(so_handle, "clReleaseProgram");
 
   if(func) {
     return func(program);
@@ -875,7 +820,7 @@ clBuildProgram(cl_program           program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clBuildProgram) __dlsym(so_handle, "clBuildProgram");
+    func = (f_clBuildProgram) dlsym(so_handle, "clBuildProgram");
 
   if(func) {
     return func(program, num_devices, device_list, options, pfn_notify, user_data);
@@ -901,7 +846,7 @@ clCompileProgram(cl_program           program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCompileProgram) __dlsym(so_handle, "clCompileProgram");
+    func = (f_clCompileProgram) dlsym(so_handle, "clCompileProgram");
 
   if(func) {
     return func(program, num_devices, device_list, options, num_input_headers, input_headers,
@@ -928,7 +873,7 @@ clLinkProgram(cl_context           context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clLinkProgram) __dlsym(so_handle, "clLinkProgram");
+    func = (f_clLinkProgram) dlsym(so_handle, "clLinkProgram");
 
   if(func) {
     return func(context, num_devices, device_list, options, num_input_programs,
@@ -948,7 +893,7 @@ clUnloadPlatformCompiler(cl_platform_id platform)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clUnloadPlatformCompiler) __dlsym(so_handle, "clUnloadPlatformCompiler");
+    func = (f_clUnloadPlatformCompiler) dlsym(so_handle, "clUnloadPlatformCompiler");
 
   if(func) {
     return func(platform);
@@ -970,7 +915,7 @@ clGetProgramInfo(cl_program         program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetProgramInfo) __dlsym(so_handle, "clGetProgramInfo");
+    func = (f_clGetProgramInfo) dlsym(so_handle, "clGetProgramInfo");
 
   if(func) {
     return func(program, param_name, param_value_size,
@@ -994,7 +939,7 @@ clGetProgramBuildInfo(cl_program            program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetProgramBuildInfo) __dlsym(so_handle, "clGetProgramBuildInfo");
+    func = (f_clGetProgramBuildInfo) dlsym(so_handle, "clGetProgramBuildInfo");
 
   if(func) {
     return func(program, device, param_name, param_value_size,
@@ -1016,7 +961,7 @@ clCreateKernel(cl_program      program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateKernel) __dlsym(so_handle, "clCreateKernel");
+    func = (f_clCreateKernel) dlsym(so_handle, "clCreateKernel");
 
   if(func) {
     return func(program, kernel_name, errcode_ret);
@@ -1037,7 +982,7 @@ clCreateKernelsInProgram(cl_program     program,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateKernelsInProgram) __dlsym(so_handle, "clCreateKernelsInProgram");
+    func = (f_clCreateKernelsInProgram) dlsym(so_handle, "clCreateKernelsInProgram");
 
   if(func) {
     return func(program, num_kernels, kernels, num_kernels_ret);
@@ -1055,7 +1000,7 @@ clRetainKernel(cl_kernel    kernel)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainKernel) __dlsym(so_handle, "clRetainKernel");
+    func = (f_clRetainKernel) dlsym(so_handle, "clRetainKernel");
 
   if(func) {
     return func(kernel);
@@ -1073,7 +1018,7 @@ clReleaseKernel(cl_kernel   kernel)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseKernel) __dlsym(so_handle, "clReleaseKernel");
+    func = (f_clReleaseKernel) dlsym(so_handle, "clReleaseKernel");
 
   if(func) {
     return func(kernel);
@@ -1094,7 +1039,7 @@ clSetKernelArg(cl_kernel    kernel,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clSetKernelArg) __dlsym(so_handle, "clSetKernelArg");
+    func = (f_clSetKernelArg) dlsym(so_handle, "clSetKernelArg");
 
   if(func) {
     return func(kernel, arg_index, arg_size, arg_value);
@@ -1116,7 +1061,7 @@ clGetKernelInfo(cl_kernel       kernel,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetKernelInfo) __dlsym(so_handle, "clGetKernelInfo");
+    func = (f_clGetKernelInfo) dlsym(so_handle, "clGetKernelInfo");
 
   if(func) {
     return func(kernel, param_name, param_value_size, param_value, param_value_size_ret);
@@ -1139,7 +1084,7 @@ clGetKernelArgInfo(cl_kernel       kernel,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetKernelArgInfo) __dlsym(so_handle, "clGetKernelArgInfo");
+    func = (f_clGetKernelArgInfo) dlsym(so_handle, "clGetKernelArgInfo");
 
   if(func) {
     return func(kernel, arg_indx, param_name, param_value_size,
@@ -1163,7 +1108,7 @@ clGetKernelWorkGroupInfo(cl_kernel                  kernel,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetKernelWorkGroupInfo) __dlsym(so_handle, "clGetKernelWorkGroupInfo");
+    func = (f_clGetKernelWorkGroupInfo) dlsym(so_handle, "clGetKernelWorkGroupInfo");
 
   if(func) {
     return func(kernel, device, param_name, param_value_size, param_value, param_value_size_ret);
@@ -1183,7 +1128,7 @@ clWaitForEvents(cl_uint             num_events,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clWaitForEvents) __dlsym(so_handle, "clWaitForEvents");
+    func = (f_clWaitForEvents) dlsym(so_handle, "clWaitForEvents");
 
   if(func) {
     return func(num_events, event_list);
@@ -1206,7 +1151,7 @@ clGetEventInfo(cl_event         event,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetEventInfo) __dlsym(so_handle, "clGetEventInfo");
+    func = (f_clGetEventInfo) dlsym(so_handle, "clGetEventInfo");
 
   if(func) {
     return func(event, param_name, param_value_size, param_value, param_value_size_ret);
@@ -1225,7 +1170,7 @@ clCreateUserEvent(cl_context    context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateUserEvent) __dlsym(so_handle, "clCreateUserEvent");
+    func = (f_clCreateUserEvent) dlsym(so_handle, "clCreateUserEvent");
 
   if(func) {
     return func(context, errcode_ret);
@@ -1243,7 +1188,7 @@ clRetainEvent(cl_event event)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clRetainEvent) __dlsym(so_handle, "clRetainEvent");
+    func = (f_clRetainEvent) dlsym(so_handle, "clRetainEvent");
 
   if(func) {
     return func(event);
@@ -1261,7 +1206,7 @@ clReleaseEvent(cl_event event)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clReleaseEvent) __dlsym(so_handle, "clReleaseEvent");
+    func = (f_clReleaseEvent) dlsym(so_handle, "clReleaseEvent");
 
   if(func) {
     return func(event);
@@ -1280,7 +1225,7 @@ clSetUserEventStatus(cl_event   event,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clSetUserEventStatus) __dlsym(so_handle, "clSetUserEventStatus");
+    func = (f_clSetUserEventStatus) dlsym(so_handle, "clSetUserEventStatus");
 
   if(func) {
     return func(event, execution_status);
@@ -1301,7 +1246,7 @@ clSetEventCallback( cl_event    event,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clSetEventCallback) __dlsym(so_handle, "clSetEventCallback");
+    func = (f_clSetEventCallback) dlsym(so_handle, "clSetEventCallback");
 
   if(func) {
     return func(event, command_exec_callback_type, pfn_notify, user_data);
@@ -1323,7 +1268,7 @@ clGetEventProfilingInfo(cl_event            event,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetEventProfilingInfo) __dlsym(so_handle, "clGetEventProfilingInfo");
+    func = (f_clGetEventProfilingInfo) dlsym(so_handle, "clGetEventProfilingInfo");
 
   if(func) {
     return func(event, param_name, param_value_size, param_value, param_value_size_ret);
@@ -1341,7 +1286,7 @@ clFlush(cl_command_queue command_queue)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clFlush) __dlsym(so_handle, "clFlush");
+    func = (f_clFlush) dlsym(so_handle, "clFlush");
 
   if(func) {
     return func(command_queue);
@@ -1359,7 +1304,7 @@ clFinish(cl_command_queue command_queue)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clFinish) __dlsym(so_handle, "clFinish");
+    func = (f_clFinish) dlsym(so_handle, "clFinish");
 
   if(func) {
     return func(command_queue);
@@ -1386,7 +1331,7 @@ clEnqueueReadBuffer(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueReadBuffer) __dlsym(so_handle, "clEnqueueReadBuffer");
+    func = (f_clEnqueueReadBuffer) dlsym(so_handle, "clEnqueueReadBuffer");
 
   if(func) {
     return func(command_queue, buffer, blocking_read, offset, size, ptr,
@@ -1418,7 +1363,7 @@ clEnqueueReadBufferRect(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueReadBufferRect) __dlsym(so_handle, "clEnqueueReadBufferRect");
+    func = (f_clEnqueueReadBufferRect) dlsym(so_handle, "clEnqueueReadBufferRect");
 
   if(func) {
     return func(command_queue, buffer, blocking_read, buffer_offset, host_offset, region,
@@ -1446,7 +1391,7 @@ clEnqueueWriteBuffer(cl_command_queue   command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueWriteBuffer) __dlsym(so_handle, "clEnqueueWriteBuffer");
+    func = (f_clEnqueueWriteBuffer) dlsym(so_handle, "clEnqueueWriteBuffer");
 
   if(func) {
     return func(command_queue, buffer, blocking_write, offset, size, ptr,
@@ -1479,7 +1424,7 @@ clEnqueueWriteBufferRect(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueWriteBufferRect) __dlsym(so_handle, "clEnqueueWriteBufferRect");
+    func = (f_clEnqueueWriteBufferRect) dlsym(so_handle, "clEnqueueWriteBufferRect");
 
   if(func) {
     return func(command_queue, buffer, blocking_write, buffer_offset, host_offset, region,
@@ -1508,7 +1453,7 @@ clEnqueueFillBuffer(cl_command_queue   command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueFillBuffer) __dlsym(so_handle, "clEnqueueFillBuffer");
+    func = (f_clEnqueueFillBuffer) dlsym(so_handle, "clEnqueueFillBuffer");
 
   if(func) {
     return func(command_queue, buffer, pattern, pattern_size, offset, size,
@@ -1535,7 +1480,7 @@ clEnqueueCopyBuffer(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueCopyBuffer) __dlsym(so_handle, "clEnqueueCopyBuffer");
+    func = (f_clEnqueueCopyBuffer) dlsym(so_handle, "clEnqueueCopyBuffer");
 
   if(func) {
     return func(command_queue, src_buffer, dst_buffer, src_offset, dst_offset, size,
@@ -1568,7 +1513,7 @@ clEnqueueCopyBufferRect(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueCopyBufferRect) __dlsym(so_handle, "clEnqueueCopyBufferRect");
+    func = (f_clEnqueueCopyBufferRect) dlsym(so_handle, "clEnqueueCopyBufferRect");
 
   if(func) {
     return func(command_queue, src_buffer, dst_buffer, src_origin, dst_origin, region, src_row_pitch,
@@ -1597,7 +1542,7 @@ clEnqueueReadImage(cl_command_queue     command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueReadImage) __dlsym(so_handle, "clEnqueueReadImage");
+    func = (f_clEnqueueReadImage) dlsym(so_handle, "clEnqueueReadImage");
 
   if(func) {
     return func(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch,
@@ -1626,7 +1571,7 @@ clEnqueueWriteImage(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueWriteImage) __dlsym(so_handle, "clEnqueueWriteImage");
+    func = (f_clEnqueueWriteImage) dlsym(so_handle, "clEnqueueWriteImage");
 
   if(func) {
     return func(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr,
@@ -1653,7 +1598,7 @@ clEnqueueFillImage(cl_command_queue   command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueFillImage) __dlsym(so_handle, "clEnqueueFillImage");
+    func = (f_clEnqueueFillImage) dlsym(so_handle, "clEnqueueFillImage");
 
   if(func) {
     return func(command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event);
@@ -1679,7 +1624,7 @@ clEnqueueCopyImage(cl_command_queue     command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueCopyImage) __dlsym(so_handle, "clEnqueueCopyImage");
+    func = (f_clEnqueueCopyImage) dlsym(so_handle, "clEnqueueCopyImage");
 
   if(func) {
     return func(command_queue, src_image, dst_image, src_origin, dst_origin, region,
@@ -1706,7 +1651,7 @@ clEnqueueCopyImageToBuffer(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueCopyImageToBuffer) __dlsym(so_handle, "clEnqueueCopyImageToBuffer");
+    func = (f_clEnqueueCopyImageToBuffer) dlsym(so_handle, "clEnqueueCopyImageToBuffer");
 
   if(func) {
     return func(command_queue, src_image, dst_buffer, src_origin, region, dst_offset,
@@ -1734,7 +1679,7 @@ clEnqueueCopyBufferToImage(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueCopyBufferToImage) __dlsym(so_handle, "clEnqueueCopyBufferToImage");
+    func = (f_clEnqueueCopyBufferToImage) dlsym(so_handle, "clEnqueueCopyBufferToImage");
 
   if(func) {
     return func(command_queue, src_buffer, dst_image, src_offset, dst_origin, region,
@@ -1762,7 +1707,7 @@ clEnqueueMapBuffer(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueMapBuffer) __dlsym(so_handle, "clEnqueueMapBuffer");
+    func = (f_clEnqueueMapBuffer) dlsym(so_handle, "clEnqueueMapBuffer");
 
   if(func) {
     return func(command_queue, buffer, blocking_map, map_flags, offset, size,
@@ -1792,7 +1737,7 @@ clEnqueueMapImage(cl_command_queue  command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueMapImage) __dlsym(so_handle, "clEnqueueMapImage");
+    func = (f_clEnqueueMapImage) dlsym(so_handle, "clEnqueueMapImage");
 
   if(func) {
     return func(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch,
@@ -1816,7 +1761,7 @@ clEnqueueUnmapMemObject(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueUnmapMemObject) __dlsym(so_handle, "clEnqueueUnmapMemObject");
+    func = (f_clEnqueueUnmapMemObject) dlsym(so_handle, "clEnqueueUnmapMemObject");
 
   if(func) {
     return func(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
@@ -1840,7 +1785,7 @@ clEnqueueMigrateMemObjects(cl_command_queue       command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueMigrateMemObjects) __dlsym(so_handle, "clEnqueueMigrateMemObjects");
+    func = (f_clEnqueueMigrateMemObjects) dlsym(so_handle, "clEnqueueMigrateMemObjects");
 
   if(func) {
     return func(command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event);
@@ -1866,7 +1811,7 @@ clEnqueueNDRangeKernel(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueNDRangeKernel) __dlsym(so_handle, "clEnqueueNDRangeKernel");
+    func = (f_clEnqueueNDRangeKernel) dlsym(so_handle, "clEnqueueNDRangeKernel");
 
   if(func) {
     return func(command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size,
@@ -1889,7 +1834,7 @@ clEnqueueTask(cl_command_queue  command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueTask) __dlsym(so_handle, "clEnqueueTask");
+    func = (f_clEnqueueTask) dlsym(so_handle, "clEnqueueTask");
 
   if(func) {
     return func(command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
@@ -1916,7 +1861,7 @@ clEnqueueNativeKernel(cl_command_queue  command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueNativeKernel) __dlsym(so_handle, "clEnqueueNativeKernel");
+    func = (f_clEnqueueNativeKernel) dlsym(so_handle, "clEnqueueNativeKernel");
 
   if(func) {
     return func(command_queue, user_func, args, cb_args, num_mem_objects, mem_list,
@@ -1938,7 +1883,7 @@ clEnqueueMarkerWithWaitList(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueMarkerWithWaitList) __dlsym(so_handle, "clEnqueueMarkerWithWaitList");
+    func = (f_clEnqueueMarkerWithWaitList) dlsym(so_handle, "clEnqueueMarkerWithWaitList");
 
   if(func) {
     return func(command_queue, num_events_in_wait_list, event_wait_list, event);
@@ -1959,7 +1904,7 @@ clEnqueueBarrierWithWaitList(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueBarrierWithWaitList) __dlsym(so_handle, "clEnqueueBarrierWithWaitList");
+    func = (f_clEnqueueBarrierWithWaitList) dlsym(so_handle, "clEnqueueBarrierWithWaitList");
 
   if(func) {
     return func(command_queue, num_events_in_wait_list, event_wait_list, event);
@@ -1978,7 +1923,8 @@ clGetExtensionFunctionAddressForPlatform(cl_platform_id platform,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetExtensionFunctionAddressForPlatform) __dlsym(so_handle, "clGetExtensionFunctionAddressForPlatform");
+    func = (f_clGetExtensionFunctionAddressForPlatform) dlsym(so_handle,
+                                                              "clGetExtensionFunctionAddressForPlatform");
 
   if(func) {
     return func(platform, func_name);
@@ -2004,7 +1950,7 @@ clCreateImage2D(cl_context              context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateImage2D) __dlsym(so_handle, "clCreateImage2D");
+    func = (f_clCreateImage2D) dlsym(so_handle, "clCreateImage2D");
 
   if(func) {
     return func(context, flags, image_format, image_width, image_height,
@@ -2032,7 +1978,7 @@ clCreateImage3D(cl_context              context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateImage3D) __dlsym(so_handle, "clCreateImage3D");
+    func = (f_clCreateImage3D) dlsym(so_handle, "clCreateImage3D");
 
   if(func) {
     return func(context, flags, image_format, image_width, image_height, image_depth,
@@ -2052,7 +1998,7 @@ clEnqueueMarker(cl_command_queue    command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueMarker) __dlsym(so_handle, "clEnqueueMarker");
+    func = (f_clEnqueueMarker) dlsym(so_handle, "clEnqueueMarker");
 
   if(func) {
     return func(command_queue, event);
@@ -2072,7 +2018,7 @@ clEnqueueWaitForEvents(cl_command_queue command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueWaitForEvents) __dlsym(so_handle, "clEnqueueWaitForEvents");
+    func = (f_clEnqueueWaitForEvents) dlsym(so_handle, "clEnqueueWaitForEvents");
 
   if(func) {
     return func(command_queue, num_events, event_list);
@@ -2090,7 +2036,7 @@ clEnqueueBarrier(cl_command_queue command_queue)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueBarrier) __dlsym(so_handle, "clEnqueueBarrier");
+    func = (f_clEnqueueBarrier) dlsym(so_handle, "clEnqueueBarrier");
 
   if(func) {
     return func(command_queue);
@@ -2108,7 +2054,7 @@ clUnloadCompiler(void)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clUnloadCompiler) __dlsym(so_handle, "clUnloadCompiler");
+    func = (f_clUnloadCompiler) dlsym(so_handle, "clUnloadCompiler");
 
   if(func) {
     return func();
@@ -2126,7 +2072,7 @@ clGetExtensionFunctionAddress(const char * func_name)
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetExtensionFunctionAddress) __dlsym(so_handle, "clGetExtensionFunctionAddress");
+    func = (f_clGetExtensionFunctionAddress) dlsym(so_handle, "clGetExtensionFunctionAddress");
 
   if(func) {
     return func(func_name);
@@ -2148,7 +2094,7 @@ clCreateFromGLBuffer(cl_context     context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateFromGLBuffer) __dlsym(so_handle, "clCreateFromGLBuffer");
+    func = (f_clCreateFromGLBuffer) dlsym(so_handle, "clCreateFromGLBuffer");
 
   if(func) {
     return func(context, flags, bufobj, errcode_ret);
@@ -2171,7 +2117,7 @@ clCreateFromGLTexture(cl_context      context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateFromGLTexture) __dlsym(so_handle, "clCreateFromGLTexture");
+    func = (f_clCreateFromGLTexture) dlsym(so_handle, "clCreateFromGLTexture");
 
   if(func) {
     return func(context, flags, target, miplevel, texture, errcode_ret);
@@ -2192,7 +2138,7 @@ clCreateFromGLRenderbuffer(cl_context   context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateFromGLRenderbuffer) __dlsym(so_handle, "clCreateFromGLRenderbuffer");
+    func = (f_clCreateFromGLRenderbuffer) dlsym(so_handle, "clCreateFromGLRenderbuffer");
 
   if(func) {
     return func(context, flags, renderbuffer, errcode_ret);
@@ -2212,7 +2158,7 @@ clGetGLObjectInfo(cl_mem                memobj,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetGLObjectInfo) __dlsym(so_handle, "clGetGLObjectInfo");
+    func = (f_clGetGLObjectInfo) dlsym(so_handle, "clGetGLObjectInfo");
 
   if(func) {
     return func(memobj, gl_object_type, gl_object_name);
@@ -2234,7 +2180,7 @@ clGetGLTextureInfo(cl_mem               memobj,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetGLTextureInfo) __dlsym(so_handle, "clGetGLTextureInfo");
+    func = (f_clGetGLTextureInfo) dlsym(so_handle, "clGetGLTextureInfo");
 
   if(func) {
     return func(memobj, param_name, param_value_size, param_value, param_value_size_ret);
@@ -2257,7 +2203,7 @@ clEnqueueAcquireGLObjects(cl_command_queue      command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueAcquireGLObjects) __dlsym(so_handle, "clEnqueueAcquireGLObjects");
+    func = (f_clEnqueueAcquireGLObjects) dlsym(so_handle, "clEnqueueAcquireGLObjects");
 
   if(func) {
     return func(command_queue, num_objects, mem_objects, num_events_in_wait_list, event_wait_list, event);
@@ -2280,7 +2226,7 @@ clEnqueueReleaseGLObjects(cl_command_queue      command_queue,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clEnqueueReleaseGLObjects) __dlsym(so_handle, "clEnqueueReleaseGLObjects");
+    func = (f_clEnqueueReleaseGLObjects) dlsym(so_handle, "clEnqueueReleaseGLObjects");
 
   if(func) {
     return func(command_queue, num_objects, mem_objects, num_events_in_wait_list, event_wait_list, event);
@@ -2304,7 +2250,7 @@ clCreateFromGLTexture2D(cl_context      context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateFromGLTexture2D) __dlsym(so_handle, "clCreateFromGLTexture2D");
+    func = (f_clCreateFromGLTexture2D) dlsym(so_handle, "clCreateFromGLTexture2D");
 
   if(func) {
     return func(context, flags, target, miplevel, texture, errcode_ret);
@@ -2327,7 +2273,7 @@ clCreateFromGLTexture3D(cl_context      context,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clCreateFromGLTexture3D) __dlsym(so_handle, "clCreateFromGLTexture3D");
+    func = (f_clCreateFromGLTexture3D) dlsym(so_handle, "clCreateFromGLTexture3D");
 
   if(func) {
     return func(context, flags, target, miplevel, texture, errcode_ret);
@@ -2349,7 +2295,7 @@ clGetGLContextInfoKHR(const cl_context_properties * properties,
     open_libopencl_so();
 
   if(so_handle)
-    func = (f_clGetGLContextInfoKHR) __dlsym(so_handle, "clGetGLContextInfoKHR");
+    func = (f_clGetGLContextInfoKHR) dlsym(so_handle, "clGetGLContextInfoKHR");
 
   if(func) {
     return func(properties, param_name, param_value_size, param_value, param_value_size_ret);
